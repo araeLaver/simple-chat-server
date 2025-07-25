@@ -22,4 +22,22 @@ public class MinimalChatApplication {
     public String health() {
         return "OK";
     }
+    
+    @GetMapping("/api/info")
+    public String apiInfo() {
+        return """
+            {
+                "service": "ChatApp",
+                "version": "1.0.0",
+                "status": "running",
+                "endpoints": [
+                    "GET / - Homepage",
+                    "GET /health - Health check",
+                    "GET /api/info - Service information"
+                ],
+                "deployment": "Koyeb",
+                "framework": "Spring Boot 3.2.0"
+            }
+            """;
+    }
 }

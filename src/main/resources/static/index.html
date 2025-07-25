@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatApp 🚀</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+        .feature-list {
+            text-align: left;
+            margin: 30px 0;
+        }
+        .feature-list li {
+            padding: 10px 0;
+            color: #666;
+            font-size: 1.1rem;
+        }
+        .feature-list li::before {
+            content: "✅ ";
+            margin-right: 10px;
+        }
+        .status {
+            background: #e8f5e8;
+            color: #2d5a2d;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .endpoints {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .endpoints h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .endpoint {
+            background: #fff;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+            font-family: monospace;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 10px;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ChatApp 🚀</h1>
+        
+        <div class="status">
+            ✅ 서비스 정상 운영 중
+        </div>
+
+        <div class="endpoints">
+            <h3>🔗 사용 가능한 엔드포인트</h3>
+            <div class="endpoint">GET / - 홈페이지</div>
+            <div class="endpoint">GET /health - 서비스 상태 확인</div>
+            <div class="endpoint">GET /api/info - 서비스 정보</div>
+        </div>
+
+        <ul class="feature-list">
+            <li>실시간 채팅 (추후 추가 예정)</li>
+            <li>다중 채팅방 지원 (추후 추가 예정)</li>
+            <li>파일 공유 (추후 추가 예정)</li>
+            <li>사용자 인증 (추후 추가 예정)</li>
+        </ul>
+
+        <div>
+            <a href="/health" class="btn">헬스체크</a>
+            <a href="/api/info" class="btn">서비스 정보</a>
+        </div>
+
+        <p style="margin-top: 30px; color: #888; font-size: 0.9rem;">
+            🛠️ 개발 버전 - 지속적으로 기능이 추가됩니다
+        </p>
+    </div>
+</body>
+</html>
