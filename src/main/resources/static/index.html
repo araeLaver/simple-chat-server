@@ -816,7 +816,9 @@
 
         // 채팅 연결
         function connectToChat() {
-            socket = new WebSocket('ws://localhost:8080/chat');
+            const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${location.host}/chat`;
+            socket = new WebSocket(wsUrl);
             
             socket.onopen = function(event) {
                 updateConnectionStatus('online');
