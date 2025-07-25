@@ -3,8 +3,8 @@ FROM openjdk:17-jre-slim
 WORKDIR /app
 COPY target/*.jar app.jar
 
-# 메모리 제한에 맞는 JVM 설정
-ENV JAVA_OPTS="-Xms128m -Xmx400m -XX:+UseSerialGC"
+# Koyeb free tier에 최적화된 JVM 설정
+ENV JAVA_OPTS="-Xms64m -Xmx256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -Djava.security.egd=file:/dev/./urandom"
 
 EXPOSE 8000
 
