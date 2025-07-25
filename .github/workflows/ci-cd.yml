@@ -1,0 +1,115 @@
+name: 🚀 ChatApp CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  JAVA_VERSION: '17'
+  NODE_VERSION: '18'
+
+jobs:
+  test:
+    name: 🧪 Test & Build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: ☕ Set up JDK ${{ env.JAVA_VERSION }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: 'temurin'
+        
+    - name: 📦 Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+        
+    - name: 🔧 Run tests
+      run: mvn clean test
+      
+    - name: 📊 Generate test report
+      uses: dorny/test-reporter@v1
+      if: success() || failure()
+      with:
+        name: Maven Tests
+        path: target/surefire-reports/*.xml
+        reporter: java-junit
+        
+    - name: 🏗️ Build application
+      run: mvn clean package -DskipTests
+      
+    - name: 📤 Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: chatapp-jar
+        path: target/*.jar
+
+  deploy-dev:
+    name: 🚧 Deploy to Development
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    environment: development
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📤 Download artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: chatapp-jar
+        path: target/
+        
+    - name: 🚀 Deploy to Koyeb (Dev)
+      env:
+        KOYEB_API_TOKEN: ${{ secrets.KOYEB_API_TOKEN }}
+      run: |
+        echo "Deploying to development environment..."
+        # Koyeb deployment script will be added here
+        
+  deploy-prod:
+    name: 🎯 Deploy to Production
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 📤 Download artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: chatapp-jar
+        path: target/
+        
+    - name: 🚀 Deploy to Koyeb (Prod)
+      env:
+        KOYEB_API_TOKEN: ${{ secrets.KOYEB_API_TOKEN }}
+      run: |
+        echo "Deploying to production environment..."
+        # Koyeb deployment script will be added here
+        
+  security-scan:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🔍 Run security scan
+      uses: securecodewarrior/github-action-add-sarif@v1
+      with:
+        sarif-file: 'security-scan-results.sarif'
