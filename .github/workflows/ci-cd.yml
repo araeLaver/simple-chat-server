@@ -86,10 +86,10 @@ jobs:
                 "branch": "develop"
               },
               "instance_types": [{"type": "free"}],
-              "ports": [{"port": 8080, "protocol": "http"}],
+              "ports": [{"port": 8000, "protocol": "http"}],
               "env": [
                 {"key": "SPRING_PROFILES_ACTIVE", "value": "dev"},
-                {"key": "SERVER_PORT", "value": "8080"}
+                {"key": "SERVER_PORT", "value": "8000"}
               ]
             }]
           }'
@@ -128,10 +128,10 @@ jobs:
                 "branch": "main"
               },
               "instance_types": [{"type": "nano"}],
-              "ports": [{"port": 8080, "protocol": "http"}],
+              "ports": [{"port": 8000, "protocol": "http"}],
               "env": [
                 {"key": "SPRING_PROFILES_ACTIVE", "value": "prod"},
-                {"key": "SERVER_PORT", "value": "8080"}
+                {"key": "SERVER_PORT", "value": "8000"}
               ]
             }]
           }'
