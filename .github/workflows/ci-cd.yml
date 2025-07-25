@@ -88,8 +88,8 @@ jobs:
               "instance_types": [{"type": "free"}],
               "ports": [{"port": 8000, "protocol": "http"}],
               "env": [
-                {"key": "SPRING_PROFILES_ACTIVE", "value": "dev"},
-                {"key": "SERVER_PORT", "value": "8000"}
+                {"key": "SPRING_PROFILES_ACTIVE", "value": "koyeb"},
+                {"key": "PORT", "value": "8000"}
               ]
             }]
           }'
@@ -130,8 +130,8 @@ jobs:
               "instance_types": [{"type": "nano"}],
               "ports": [{"port": 8000, "protocol": "http"}],
               "env": [
-                {"key": "SPRING_PROFILES_ACTIVE", "value": "prod"},
-                {"key": "SERVER_PORT", "value": "8000"}
+                {"key": "SPRING_PROFILES_ACTIVE", "value": "koyeb"},
+                {"key": "PORT", "value": "8000"}
               ]
             }]
           }'
