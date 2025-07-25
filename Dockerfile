@@ -3,9 +3,9 @@ FROM openjdk:17-jre-slim
 WORKDIR /app
 COPY target/*.jar app.jar
 
-# Koyeb free tier에 최적화된 JVM 설정
-ENV JAVA_OPTS="-Xms64m -Xmx256m -XX:+UseSerialGC -XX:MaxMetaspaceSize=128m -Djava.security.egd=file:/dev/./urandom"
+# 극도로 최적화된 JVM 설정
+ENV JAVA_OPTS="-Xms32m -Xmx128m -XX:+UseSerialGC -XX:MaxMetaspaceSize=64m -Djava.security.egd=file:/dev/./urandom -XX:TieredStopAtLevel=1"
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "java $JAVA_OPTS -Dserver.port=${PORT:-8000} -jar app.jar"]
+CMD ["java", "-jar", "app.jar"]
