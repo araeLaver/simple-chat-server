@@ -11,20 +11,51 @@ public class MessageEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false)
+    @Column(name = "user_id")
+    private Long userId;
+    
+    @Column(name = "sender", nullable = false, length = 50)
     private String sender;
     
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
     
-    @Column(nullable = false)
+    @Column(name = "room_id", nullable = false, length = 50)
     private String roomId;
     
-    @Column(nullable = false)
+    @Column(name = "message_type", nullable = false, length = 20)
     private String messageType;
     
-    @Column(nullable = false)
+    @Column(name = "timestamp", nullable = false)
     private LocalDateTime timestamp;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "security_type", nullable = false, length = 20)
+    private MessageSecurityType securityType = MessageSecurityType.NORMAL;
+    
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
+    
+    @Column(name = "encryption_key", length = 255)
+    private String encryptionKey;
+    
+    @Column(name = "is_encrypted", nullable = false)
+    private Boolean isEncrypted = false;
+    
+    @Column(name = "file_url", length = 500)
+    private String fileUrl;
+    
+    @Column(name = "file_name", length = 255)
+    private String fileName;
+    
+    @Column(name = "file_size")
+    private Long fileSize;
+    
+    @Column(name = "edited_at")
+    private LocalDateTime editedAt;
+    
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
     
     public MessageEntity() {}
     
@@ -82,5 +113,89 @@ public class MessageEntity {
 
     public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public MessageSecurityType getSecurityType() {
+        return securityType;
+    }
+
+    public void setSecurityType(MessageSecurityType securityType) {
+        this.securityType = securityType;
+    }
+
+    public LocalDateTime getExpiresAt() {
+        return expiresAt;
+    }
+
+    public void setExpiresAt(LocalDateTime expiresAt) {
+        this.expiresAt = expiresAt;
+    }
+
+    public String getEncryptionKey() {
+        return encryptionKey;
+    }
+
+    public void setEncryptionKey(String encryptionKey) {
+        this.encryptionKey = encryptionKey;
+    }
+
+    public Boolean getIsEncrypted() {
+        return isEncrypted;
+    }
+
+    public void setIsEncrypted(Boolean isEncrypted) {
+        this.isEncrypted = isEncrypted;
+    }
+    
+    public boolean isExpired() {
+        return expiresAt != null && LocalDateTime.now().isAfter(expiresAt);
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public Long getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(Long fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    public LocalDateTime getEditedAt() {
+        return editedAt;
+    }
+
+    public void setEditedAt(LocalDateTime editedAt) {
+        this.editedAt = editedAt;
+    }
+
+    public Boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+    public void setIsDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 }

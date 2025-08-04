@@ -1,137 +1,183 @@
-# 🚀 Simple Chat Server
+# 🔐 SecureChat - 실시간 보안 채팅 서버
 
-현대적인 실시간 채팅 플랫폼 - 카카오톡을 능가하는 기능들을 제공합니다.
+안전하고 직관적인 실시간 채팅 애플리케이션입니다.
 
 ## ✨ 주요 기능
 
-### 🎯 핵심 기능
-- **실시간 채팅** - WebSocket 기반 즉시 메시징
-- **다중 채팅방** - 일반, 개발, 자유토론 방
-- **사용자 관리** - 회원가입, 로그인, 사용자 목록
-- **파일 공유** - 드래그&드롭 파일 업로드 (10MB)
-- **메시지 기록** - 영구 저장 및 검색 가능
-- **크로스 플랫폼** - 웹, 모바일 모두 지원
+### 🏠 사용자 맞춤 채팅방
+- **방 생성**: 일반방, 비밀방, 임시방 생성 가능
+- **방장 권한**: 👑 방장 표시 및 비밀방 비밀번호 상시 확인
+- **보안 모드별 분리**: 탭별로 다른 보안 레벨의 방들만 표시
 
-### 🛡️ 보안 기능
-- 사용자 인증 시스템
-- 파일 업로드 보안 검증
-- SQL Injection 방지
-- CORS 설정
+### 🔒 강력한 보안 시스템
+- **비밀방**: 비밀번호로 보호되는 암호화된 채팅
+- **임시방**: 메시지가 자동으로 삭제되는 휘발성 채팅
+- **일반방**: 표준 채팅 환경
 
-## 🏗️ 기술 스택
+### 🎨 사용자 경험
+- **반응형 디자인**: 모바일/데스크톱 최적화
+- **다크모드**: 테마 전환 지원
+- **PWA 지원**: 앱처럼 설치 가능
+- **실시간 알림**: 새 메시지 데스크톱 알림
+
+### 👥 사용자 시스템
+- **게스트 모드**: 회원가입 없이 즉시 채팅 시작
+- **회원 시스템**: 계정 생성으로 추가 기능 이용
+
+## 🛠 기술 스택
 
 ### Backend
 - **Java 17** + **Spring Boot 3.2**
-- **WebSocket** - 실시간 통신
-- **JPA/Hibernate** - ORM
-- **PostgreSQL** (Production) / **H2** (Development)
+- **WebSocket** (실시간 통신)
+- **Spring Data JPA** (데이터 액세스)
+- **PostgreSQL** (운영 DB) / **H2** (개발/테스트)
+- **암호화**: AES-256 (비밀방 메시지)
 
 ### Frontend
-- **HTML5** + **CSS3** + **Vanilla JavaScript**
-- **Responsive Design** - 모바일 최적화
-- **Progressive Web App** 지원
+- **Vanilla JavaScript** (경량화)
+- **Modern CSS** (Grid, Flexbox, CSS Variables)
+- **Service Worker** (PWA)
+- **WebSocket API** (실시간 통신)
 
-### 배포 환경
-- **Koyeb** - 클라우드 배포
-- **PostgreSQL** - 프로덕션 데이터베이스
-- **GitHub Actions** - CI/CD
+### 배포 & 인프라
+- **Docker** (컨테이너화)
+- **Koyeb** (클라우드 플랫폼)
+- **GitHub Actions** (CI/CD)
 
-## 🚀 빠른 시작
+## 🚀 배포 가이드
 
-### 개발 환경 실행
+### Koyeb 배포 설정
+
+1. **환경 변수 설정**:
+```
+DATABASE_URL=jdbc:postgresql://your-db-host/koyebdb?currentSchema=chatapp_prod&sslmode=require
+DATABASE_USERNAME=your-username
+DATABASE_PASSWORD=your-password
+CORS_ALLOWED_ORIGINS=https://your-domain.com
+SPRING_PROFILES_ACTIVE=prod
+```
+
+2. **배포 명령어**:
 ```bash
-# 저장소 클론
-git clone <repository-url>
+# Docker 이미지 빌드 및 푸시
+docker build -t secure-chat .
+docker push your-registry/secure-chat
+
+# 또는 Koyeb GitHub 연동으로 자동 배포
+```
+
+### 로컬 개발 환경
+
+```bash
+# 프로젝트 클론
+git clone https://github.com/your-username/simple-chat-server.git
 cd simple-chat-server
 
-# 개발 환경으로 실행 (H2 Database)
+# Maven 빌드
+mvn clean install
+
+# 로컬 실행 (H2 DB 사용)
+mvn spring-boot:run -Dspring-boot.run.profiles=local
+
+# 개발 환경 실행 (PostgreSQL 사용)
 mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-### 프로덕션 배포
+## 📦 Docker 빌드
+
 ```bash
-# 프로덕션 환경으로 실행 (PostgreSQL)
-mvn spring-boot:run -Dspring-boot.run.profiles=prod
+# 멀티스테이지 빌드로 최적화된 이미지 생성
+docker build -t secure-chat .
+
+# 컨테이너 실행
+docker run -p 8080:8080 \
+  -e SPRING_PROFILES_ACTIVE=prod \
+  -e DATABASE_URL=your-db-url \
+  -e DATABASE_USERNAME=your-username \
+  -e DATABASE_PASSWORD=your-password \
+  secure-chat
 ```
 
-## 🌐 API 엔드포인트
+## 🏗 아키텍처
 
-### 인증 API
-- `POST /api/auth/register` - 회원가입
-- `POST /api/auth/login` - 로그인
-
-### 파일 API
-- `POST /api/files/upload` - 파일 업로드
-- `GET /api/files/download/{filename}` - 파일 다운로드
-
-### WebSocket
-- `ws://localhost:8080/chat` - 실시간 채팅
-
-## 📱 사용 방법
-
-1. **http://localhost:8080** 접속
-2. **회원가입** 또는 **로그인**
-3. **채팅 시작** 버튼 클릭
-4. **채팅방 선택** 후 대화 시작
-5. **파일 드래그&드롭**으로 파일 공유
-
-## 🛠️ 개발 가이드
-
-### 프로필 설정
-- `dev` - 개발 환경 (H2 Database)
-- `prod` - 프로덕션 환경 (PostgreSQL)
-
-### 데이터베이스 관리
-- **H2 Console**: http://localhost:8080/h2-console
-- **PostgreSQL**: Koyeb 대시보드에서 관리
-
-### 환경 변수
-```bash
-# 개발
-export SPRING_PROFILES_ACTIVE=dev
-
-# 프로덕션
-export SPRING_PROFILES_ACTIVE=prod
-export PORT=8080
+```
+Frontend (Vanilla JS + CSS)
+    ↕ WebSocket
+Backend (Spring Boot)
+    ↕ JPA
+Database (PostgreSQL / H2)
 ```
 
-## 🔧 설정
+### 보안 계층
+- **전송 계층**: WSS (WebSocket Secure)
+- **애플리케이션 계층**: 메시지별 암호화 (비밀방)
+- **데이터베이스**: SSL 연결, 암호화된 비밀번호
 
-### application.properties
-```properties
-# 기본 프로필
-spring.profiles.active=dev
+## 📱 PWA 기능
 
-# 서버 설정
-server.port=${PORT:8080}
+- **오프라인 지원**: Service Worker 캐싱
+- **설치 가능**: 브라우저에서 앱으로 설치
+- **푸시 알림**: 새 메시지 알림 (예정)
+- **반응형**: 모든 디바이스에서 최적화
 
-# 파일 업로드
-spring.servlet.multipart.max-file-size=10MB
+## 🔧 개발 도구
+
+### 프로파일 설정
+- `local`: H2 메모리 DB, 개발용 설정
+- `dev`: PostgreSQL, 개발 서버용
+- `prod`: PostgreSQL, 운영 서버용 최적화
+
+### 데이터베이스 마이그레이션
+```sql
+-- 운영 DB 스키마 생성
+CREATE SCHEMA IF NOT EXISTS chatapp_prod;
 ```
 
-## 📈 확장 계획
+## 🌟 주요 특징
 
-- [ ] 개인 메시지 (DM)
-- [ ] 이모티콘 시스템
-- [ ] 알림 시스템
-- [ ] 모바일 앱 (React Native)
-- [ ] 관리자 대시보드
-- [ ] 메시지 검색
-- [ ] 파일 미리보기
-- [ ] 음성/영상 통화
+### 실시간 통신
+- WebSocket 기반 즉시 메시지 전송
+- 연결 끊김 시 자동 재연결
+- 사용자 온라인 상태 실시간 표시
 
-## 🤝 기여하기
+### 메시지 보안
+- **일반**: 표준 채팅
+- **비밀**: AES-256 암호화 + 비밀번호 보호
+- **임시**: 시간 기반 자동 삭제 (10초~5분)
+
+### 사용자 인터페이스
+- 직관적인 탭 기반 네비게이션
+- 방 생성 모달로 쉬운 설정
+- 방장 전용 기능 (비밀번호 표시 등)
+
+## 📈 성능 최적화
+
+### 백엔드
+- Connection Pool 최적화
+- JPA 배치 처리
+- G1GC 사용으로 낮은 지연시간
+
+### 프론트엔드
+- 바닐라 JS로 번들 크기 최소화
+- CSS Variables로 테마 전환 최적화
+- Service Worker 캐싱
+
+## 🤝 기여 가이드
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
 ## 📄 라이선스
 
-MIT License - 자유롭게 사용 가능합니다.
+MIT License - 자유롭게 사용하세요!
+
+## 🙋‍♂️ 지원
+
+문제가 있거나 질문이 있으시면 [Issues](https://github.com/your-username/simple-chat-server/issues)에 등록해 주세요.
 
 ---
 
-Made with ❤️ by [Your Name]
+**🔐 SecureChat** - 안전하고 사용하기 쉬운 실시간 채팅의 새로운 기준

@@ -3,6 +3,7 @@ package com.chat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -18,6 +19,15 @@ public class MessageService {
             chatMessage.getRoomId(),
             chatMessage.getType() != null ? chatMessage.getType() : "message"
         );
+        
+        entity.setSecurityType(chatMessage.getSecurityType());
+        entity.setIsEncrypted(chatMessage.getIsEncrypted());
+        entity.setEncryptionKey(chatMessage.getEncryptionKey());
+        
+        if (chatMessage.getVolatileDuration() != null && chatMessage.getVolatileDuration() > 0) {
+            entity.setExpiresAt(LocalDateTime.now().plusSeconds(chatMessage.getVolatileDuration()));
+        }
+        
         return messageRepository.save(entity);
     }
     

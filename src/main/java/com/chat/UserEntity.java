@@ -17,23 +17,46 @@ public class UserEntity {
     @Column(nullable = false)
     private String password;
     
-    @Column(unique = true)
+    @Column
     private String email;
     
-    @Column(nullable = false)
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
+    
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
+    
+    @Column(name = "profile_image", length = 500)
+    private String profileImage;
+    
+    @Column(name = "status_message", length = 200)
+    private String statusMessage;
+    
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
     
-    private LocalDateTime lastLoginAt;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
     
     public UserEntity() {
         this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+    
+    public UserEntity(String username, String password) {
+        this();
+        this.username = username;
+        this.password = password;
     }
     
     public UserEntity(String username, String password, String email) {
-        this.username = username;
-        this.password = password;
+        this(username, password);
         this.email = email;
-        this.createdAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -60,14 +83,6 @@ public class UserEntity {
         this.password = password;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -76,11 +91,51 @@ public class UserEntity {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getLastLoginAt() {
-        return lastLoginAt;
+    public String getEmail() {
+        return email;
     }
 
-    public void setLastLoginAt(LocalDateTime lastLoginAt) {
-        this.lastLoginAt = lastLoginAt;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public LocalDateTime getLastLogin() {
+        return lastLogin;
+    }
+
+    public void setLastLogin(LocalDateTime lastLogin) {
+        this.lastLogin = lastLogin;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
+    }
+
+    public String getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(String profileImage) {
+        this.profileImage = profileImage;
+    }
+
+    public String getStatusMessage() {
+        return statusMessage;
+    }
+
+    public void setStatusMessage(String statusMessage) {
+        this.statusMessage = statusMessage;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
