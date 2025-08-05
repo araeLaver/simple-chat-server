@@ -87,6 +87,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 handleCreateRoom(session, chatMessage);
             } else if ("joinSecretRoom".equals(chatMessage.getType())) {
                 handleJoinSecretRoom(session, chatMessage);
+            } else if ("deleteRoom".equals(chatMessage.getType())) {
+                handleDeleteRoom(session, chatMessage);
             }
             
             System.out.println("메시지 처리: " + chatMessage.getSender() + " - " + chatMessage.getContent());
@@ -301,6 +303,12 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 return;
             }
             
+            // 방 이름 중복 체크
+            if (isRoomNameDuplicate(roomName.trim())) {
+                sendErrorMessage(session, "이미 존재하는 방 이름입니다. 다른 이름을 사용해주세요.");
+                return;
+            }
+            
             // 고유한 방 ID 생성
             String roomId = "custom_" + System.currentTimeMillis();
             
@@ -381,6 +389,80 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         
         if (session.isOpen()) {
             session.sendMessage(new TextMessage(objectMapper.writeValueAsString(error)));
+        }
+    }
+    
+    private boolean isRoomNameDuplicate(String roomName) {
+        return chatRooms.values().stream()
+            .anyMatch(room -> room.getRoomName().equals(roomName));
+    }
+    
+    private void handleDeleteRoom(WebSocketSession session, ChatMessage message) throws Exception {
+        try {
+            String roomId = message.getRoomId();
+            String requestUser = message.getSender();
+            
+            if (roomId == null || roomId.trim().isEmpty()) {
+                sendErrorMessage(session, "삭제할 방을 지정하세요.");
+                return;
+            }
+            
+            ChatRoom room = chatRooms.get(roomId);
+            if (room == null) {
+                sendErrorMessage(session, "존재하지 않는 방입니다.");
+                return;
+            }
+            
+            // 기본 방은 삭제 불가
+            if (roomId.equals("general") || roomId.equals("tech") || roomId.equals("casual") || 
+                roomId.equals("secret") || roomId.equals("volatile")) {
+                sendErrorMessage(session, "기본 방은 삭제할 수 없습니다.");
+                return;
+            }
+            
+            // 방장만 삭제 가능
+            if (!requestUser.equals(room.getCreator())) {
+                sendErrorMessage(session, "방장만 방을 삭제할 수 있습니다.");
+                return;
+            }
+            
+            // 방에 있는 모든 사용자를 내보냄
+            for (User user : new ArrayList<>(room.getUsers().values())) {
+                WebSocketSession userSession = findSessionById(user.getSessionId());
+                if (userSession != null) {
+                    sessionToRoom.remove(userSession.getId());
+                    
+                    // 삭제 알림 메시지 전송
+                    ChatMessage deleteMessage = new ChatMessage("시스템", 
+                        "방이 삭제되었습니다. 로비로 이동합니다.", 
+                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")), 
+                        "roomDeleted");
+                    deleteMessage.setRoomId(roomId);
+                    
+                    if (userSession.isOpen()) {
+                        userSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(deleteMessage)));
+                    }
+                }
+            }
+            
+            // 방 삭제
+            chatRooms.remove(roomId);
+            
+            System.out.println("방 삭제: " + room.getRoomName() + " by " + requestUser);
+            
+            // 모든 사용자에게 방 목록 업데이트
+            broadcastRoomListUpdate();
+            
+            // 성공 메시지 전송
+            ChatMessage successMessage = new ChatMessage("시스템", 
+                "방이 성공적으로 삭제되었습니다.", 
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")), 
+                "success");
+            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(successMessage)));
+            
+        } catch (Exception e) {
+            System.err.println("방 삭제 오류: " + e.getMessage());
+            sendErrorMessage(session, "방 삭제 중 오류가 발생했습니다.");
         }
     }
 }
