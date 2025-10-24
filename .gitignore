@@ -113,3 +113,9 @@ apache-maven.zip
 
 # Environment variables
 .env
+.env.local
+.env.*.local
+
+# Sensitive configuration files
+*-secret.properties
+*-credentials.properties

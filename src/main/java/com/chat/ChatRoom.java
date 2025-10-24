@@ -29,11 +29,13 @@ public class ChatRoom {
         this.roomId = roomId;
         this.roomName = roomName;
         this.roomType = roomType;
-        this.password = password;
+        // SECURITY: 비밀번호 BCrypt 해싱 (카카오톡 수준)
+        this.password = (password != null && !password.isEmpty()) ? PasswordUtil.hashPassword(password) : null;
         this.users = new ConcurrentHashMap<>();
         this.createdTime = System.currentTimeMillis();
-        
+
         if (roomType == RoomType.SECRET) {
+            // 암호화 키는 원본 비밀번호로 생성 (해시 전)
             this.encryptionKey = EncryptionUtil.generateRoomKey(roomId, password != null ? password : "");
         }
     }
@@ -42,14 +44,17 @@ public class ChatRoom {
         this.roomId = roomId;
         this.roomName = roomName;
         this.roomType = roomType;
-        this.password = password;
+        // SECURITY: 비밀번호 BCrypt 해싱 (카카오톡 수준)
+        String originalPassword = password;  // 암호화 키 생성용
+        this.password = (password != null && !password.isEmpty()) ? PasswordUtil.hashPassword(password) : null;
         this.creator = creator;
         this.description = description;
         this.users = new ConcurrentHashMap<>();
         this.createdTime = System.currentTimeMillis();
-        
+
         if (roomType == RoomType.SECRET) {
-            this.encryptionKey = EncryptionUtil.generateRoomKey(roomId, password != null ? password : "");
+            // 암호화 키는 원본 비밀번호로 생성 (해시 전)
+            this.encryptionKey = EncryptionUtil.generateRoomKey(roomId, originalPassword != null ? originalPassword : "");
         }
     }
 
@@ -141,8 +146,14 @@ public class ChatRoom {
         this.description = description;
     }
 
+    /**
+     * 비밀번호 검증 (BCrypt 사용)
+     * @param inputPassword 사용자가 입력한 평문 비밀번호
+     * @return 일치 여부
+     */
     public boolean verifyPassword(String inputPassword) {
         if (password == null) return true;
-        return password.equals(inputPassword);
+        // SECURITY: BCrypt로 안전하게 비교 (카카오톡 수준)
+        return PasswordUtil.verifyPassword(inputPassword, password);
     }
 }
