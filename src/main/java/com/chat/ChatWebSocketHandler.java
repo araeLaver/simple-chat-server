@@ -29,6 +29,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Autowired
     private MessageService messageService;
 
+    @Autowired
+    private DirectChatService directChatService;
+
     public ChatWebSocketHandler() {
         chatRooms.put("general", new ChatRoom("general", "일반 채팅방", RoomType.NORMAL, null));
         chatRooms.put("tech", new ChatRoom("tech", "개발 이야기", RoomType.NORMAL, null));
@@ -89,6 +92,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 handleJoinSecretRoom(session, chatMessage);
             } else if ("deleteRoom".equals(chatMessage.getType())) {
                 handleDeleteRoom(session, chatMessage);
+            } else if ("createDirectChat".equals(chatMessage.getType())) {
+                handleCreateDirectChat(session, chatMessage);
             }
             
             System.out.println("메시지 처리: " + chatMessage.getSender() + " - " + chatMessage.getContent());
@@ -100,21 +105,36 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     private void joinRoom(WebSocketSession session, String roomId, String username) throws Exception {
         ChatRoom room = chatRooms.get(roomId);
-        if (room == null) return;
-        
+
+        // 1:1 채팅방이 없으면 자동 생성 (카카오톡 방식)
+        if (room == null && directChatService.isDirectChat(roomId)) {
+            room = new ChatRoom(roomId, "1:1 채팅", RoomType.NORMAL, null);
+            chatRooms.put(roomId, room);
+            System.out.println("1:1 채팅방 자동 생성: " + roomId);
+        }
+
+        if (room == null) {
+            sendErrorMessage(session, "존재하지 않는 방입니다.");
+            return;
+        }
+
         User user = new User(session.getId(), username, session.getId());
         users.put(session.getId(), user);
         room.addUser(user);
         sessionToRoom.put(session.getId(), roomId);
-        
-        ChatMessage joinMessage = new ChatMessage("시스템", 
-            username + "님이 " + room.getRoomName() + "에 입장하셨습니다.", 
-            LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")), 
-            "system");
-        joinMessage.setRoomId(roomId);
-        
-        broadcastToRoom(roomId, joinMessage);
-        sendRoomUserList(roomId);
+
+        // 1:1 채팅방은 입장 메시지 표시 안함
+        if (!directChatService.isDirectChat(roomId)) {
+            ChatMessage joinMessage = new ChatMessage("시스템",
+                username + "님이 " + room.getRoomName() + "에 입장하셨습니다.",
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                "system");
+            joinMessage.setRoomId(roomId);
+
+            broadcastToRoom(roomId, joinMessage);
+            sendRoomUserList(roomId);
+        }
+
         sendMessageHistory(session, roomId);
     }
 
@@ -463,6 +483,55 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         } catch (Exception e) {
             System.err.println("방 삭제 오류: " + e.getMessage());
             sendErrorMessage(session, "방 삭제 중 오류가 발생했습니다.");
+        }
+    }
+
+    /**
+     * 1:1 채팅방 생성 및 입장 (카카오톡 방식)
+     * WebSocket 메시지 타입: createDirectChat
+     */
+    private void handleCreateDirectChat(WebSocketSession session, ChatMessage message) throws Exception {
+        try {
+            String myUsername = message.getSender();
+            String friendUsername = message.getContent(); // 친구 이름 (임시)
+            Long friendUserId = message.getFriendUserId(); // 친구 ID
+
+            // 임시로 사용자 ID를 username 해시로 사용 (실제로는 인증 필요)
+            Long myUserId = (long) myUsername.hashCode();
+
+            if (friendUserId == null) {
+                // username으로 임시 ID 생성
+                friendUserId = (long) friendUsername.hashCode();
+            }
+
+            // 1:1 채팅방 ID 생성
+            String roomId = directChatService.getOrCreateDirectRoomId(myUserId, friendUserId);
+
+            // 방이 없으면 생성
+            if (!chatRooms.containsKey(roomId)) {
+                ChatRoom directRoom = new ChatRoom(roomId, "1:1 채팅", RoomType.NORMAL, null);
+                chatRooms.put(roomId, directRoom);
+                System.out.println("새 1:1 채팅방 생성: " + roomId);
+            }
+
+            // 자동으로 방에 입장
+            leaveCurrentRoom(session);
+            joinRoom(session, roomId, myUsername);
+
+            // 성공 메시지 전송
+            ChatMessage successMessage = new ChatMessage("시스템",
+                friendUsername + "님과의 1:1 채팅이 시작되었습니다.",
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                "directChatCreated");
+            successMessage.setRoomId(roomId);
+
+            if (session.isOpen()) {
+                session.sendMessage(new TextMessage(objectMapper.writeValueAsString(successMessage)));
+            }
+
+        } catch (Exception e) {
+            System.err.println("1:1 채팅 생성 오류: " + e.getMessage());
+            sendErrorMessage(session, "1:1 채팅을 시작할 수 없습니다: " + e.getMessage());
         }
     }
 }

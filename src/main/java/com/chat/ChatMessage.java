@@ -18,6 +18,9 @@ public class ChatMessage {
     private String description;
     private String password;
 
+    // 1:1 채팅용 필드들
+    private Long friendUserId;
+
     public ChatMessage() {}
 
     public ChatMessage(String sender, String content, String timestamp) {
@@ -145,5 +148,14 @@ public class ChatMessage {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    // 1:1 채팅용 getter/setter
+    public Long getFriendUserId() {
+        return friendUserId;
+    }
+
+    public void setFriendUserId(Long friendUserId) {
+        this.friendUserId = friendUserId;
     }
 }
