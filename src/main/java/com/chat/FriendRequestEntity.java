@@ -8,10 +8,18 @@ import java.time.LocalDateTime;
  * 카카오톡의 친구 추가 요청 기능
  */
 @Entity
-@Table(name = "friend_requests", indexes = {
-    @Index(name = "idx_to_user", columnList = "to_user_id, status"),
-    @Index(name = "idx_from_user", columnList = "from_user_id")
-})
+@Table(name = "friend_requests",
+    indexes = {
+        @Index(name = "idx_to_user", columnList = "to_user_id, status"),
+        @Index(name = "idx_from_user", columnList = "from_user_id")
+    },
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_from_to_pending",
+            columnNames = {"from_user_id", "to_user_id", "status"}
+        )
+    }
+)
 public class FriendRequestEntity {
 
     @Id

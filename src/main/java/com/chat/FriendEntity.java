@@ -8,10 +8,18 @@ import java.time.LocalDateTime;
  * 카카오톡의 친구 목록 기능
  */
 @Entity
-@Table(name = "friends", indexes = {
-    @Index(name = "idx_user_friend", columnList = "user_id, friend_user_id"),
-    @Index(name = "idx_user_status", columnList = "user_id, status")
-})
+@Table(name = "friends",
+    indexes = {
+        @Index(name = "idx_user_friend", columnList = "user_id, friend_user_id"),
+        @Index(name = "idx_user_status", columnList = "user_id, status")
+    },
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uk_user_friend",
+            columnNames = {"user_id", "friend_user_id"}
+        )
+    }
+)
 public class FriendEntity {
 
     @Id

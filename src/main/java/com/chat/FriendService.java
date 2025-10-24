@@ -1,18 +1,30 @@
 package com.chat;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 /**
- * 친구 관리 서비스
+ * 친구 관리 서비스 (개선됨)
  * 카카오톡 수준의 친구 시스템
+ *
+ * 개선 사항:
+ * - 트랜잭션 격리 레벨 추가
+ * - 양방향 친구 요청 체크
+ * - 사용자 존재 확인
+ * - 동시성 문제 해결
+ * - 페이징 지원
  */
 @Service
-@Transactional
+@Transactional(isolation = Isolation.READ_COMMITTED)
 public class FriendService {
 
     @Autowired
@@ -25,7 +37,7 @@ public class FriendService {
     private UserRepository userRepository;
 
     /**
-     * 친구 요청 보내기
+     * 친구 요청 보내기 (개선됨)
      */
     public FriendRequestEntity sendFriendRequest(Long fromUserId, Long toUserId, String message) {
         // 1. 자기 자신에게 요청 불가
@@ -33,28 +45,40 @@ public class FriendService {
             throw new IllegalArgumentException("자기 자신에게 친구 요청을 보낼 수 없습니다.");
         }
 
-        // 2. 이미 친구인지 확인
+        // 2. 사용자 존재 여부 확인 (중요!)
+        if (!userRepository.existsById(fromUserId)) {
+            throw new IllegalArgumentException("존재하지 않는 사용자입니다.");
+        }
+        if (!userRepository.existsById(toUserId)) {
+            throw new IllegalArgumentException("친구 추가할 사용자를 찾을 수 없습니다.");
+        }
+
+        // 3. 이미 친구인지 확인
         if (friendRepository.existsByUserIdAndFriendUserIdAndStatus(fromUserId, toUserId, FriendStatus.ACCEPTED)) {
             throw new IllegalArgumentException("이미 친구입니다.");
         }
 
-        // 3. 이미 요청이 있는지 확인
+        // 4. 양방향 친구 요청 체크 (개선됨!)
+        // A→B 또는 B→A 중 하나라도 PENDING이면 중복
         if (friendRequestRepository.existsByFromUserIdAndToUserIdAndStatus(fromUserId, toUserId, FriendStatus.PENDING)) {
             throw new IllegalArgumentException("이미 친구 요청을 보냈습니다.");
         }
+        if (friendRequestRepository.existsByFromUserIdAndToUserIdAndStatus(toUserId, fromUserId, FriendStatus.PENDING)) {
+            throw new IllegalArgumentException("상대방이 이미 친구 요청을 보냈습니다. 받은 요청을 확인하세요.");
+        }
 
-        // 4. 차단 여부 확인
+        // 5. 차단 여부 확인
         if (friendRepository.existsByUserIdAndFriendUserIdAndStatus(toUserId, fromUserId, FriendStatus.BLOCKED)) {
             throw new IllegalArgumentException("상대방이 회원님을 차단했습니다.");
         }
 
-        // 5. 친구 요청 생성
+        // 6. 친구 요청 생성
         FriendRequestEntity request = new FriendRequestEntity(fromUserId, toUserId, message);
         return friendRequestRepository.save(request);
     }
 
     /**
-     * 친구 요청 수락
+     * 친구 요청 수락 (개선됨)
      */
     public void acceptFriendRequest(Long requestId, Long userId) {
         // 1. 친구 요청 조회
@@ -71,14 +95,24 @@ public class FriendService {
             throw new IllegalArgumentException("이미 처리된 요청입니다.");
         }
 
-        // 4. 양방향 친구 관계 생성
+        // 4. 이미 친구인지 재확인 (동시성 문제 방지)
+        if (friendRepository.existsByUserIdAndFriendUserIdAndStatus(userId, request.getFromUserId(), FriendStatus.ACCEPTED)) {
+            throw new IllegalArgumentException("이미 친구입니다.");
+        }
+
+        // 5. 양방향 친구 관계 생성
         FriendEntity friend1 = new FriendEntity(userId, request.getFromUserId(), FriendStatus.ACCEPTED);
         FriendEntity friend2 = new FriendEntity(request.getFromUserId(), userId, FriendStatus.ACCEPTED);
 
-        friendRepository.save(friend1);
-        friendRepository.save(friend2);
+        try {
+            friendRepository.save(friend1);
+            friendRepository.save(friend2);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // 유니크 제약 조건 위반 시 (중복 친구)
+            throw new IllegalArgumentException("친구 관계가 이미 존재합니다.");
+        }
 
-        // 5. 요청 상태 업데이트
+        // 6. 요청 상태 업데이트
         request.accept();
         friendRequestRepository.save(request);
     }
@@ -155,13 +189,27 @@ public class FriendService {
     /**
      * 친구 목록 조회
      */
+    @Transactional(readOnly = true)
     public List<FriendEntity> getFriendList(Long userId) {
         return friendRepository.findByUserIdAndStatus(userId, FriendStatus.ACCEPTED);
     }
 
     /**
+     * 친구 목록 조회 with 페이징 (개선됨)
+     */
+    @Transactional(readOnly = true)
+    public Page<FriendEntity> getFriendListPaged(Long userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size,
+            Sort.by("isFavorite").descending()
+                .and(Sort.by("createdAt").descending()));
+
+        return friendRepository.findByUserIdAndStatus(userId, FriendStatus.ACCEPTED, pageable);
+    }
+
+    /**
      * 받은 친구 요청 목록
      */
+    @Transactional(readOnly = true)
     public List<FriendRequestEntity> getReceivedFriendRequests(Long userId) {
         return friendRequestRepository.findByToUserIdAndStatusOrderByCreatedAtDesc(userId, FriendStatus.PENDING);
     }
@@ -169,6 +217,7 @@ public class FriendService {
     /**
      * 보낸 친구 요청 목록
      */
+    @Transactional(readOnly = true)
     public List<FriendRequestEntity> getSentFriendRequests(Long userId) {
         return friendRequestRepository.findByFromUserIdAndStatus(userId, FriendStatus.PENDING);
     }
@@ -200,6 +249,7 @@ public class FriendService {
     /**
      * 친구 여부 확인
      */
+    @Transactional(readOnly = true)
     public boolean isFriend(Long userId, Long friendUserId) {
         return friendRepository.existsByUserIdAndFriendUserIdAndStatus(userId, friendUserId, FriendStatus.ACCEPTED);
     }
@@ -207,6 +257,7 @@ public class FriendService {
     /**
      * 차단 여부 확인
      */
+    @Transactional(readOnly = true)
     public boolean isBlocked(Long userId, Long friendUserId) {
         return friendRepository.existsByUserIdAndFriendUserIdAndStatus(userId, friendUserId, FriendStatus.BLOCKED);
     }

@@ -47,4 +47,22 @@ public interface FriendRepository extends JpaRepository<FriendEntity, Long> {
      * 차단된 사용자 목록
      */
     List<FriendEntity> findByUserIdAndStatus(Long userId, FriendStatus status, org.springframework.data.domain.Sort sort);
+
+    /**
+     * 친구 목록 조회 with 페이징
+     */
+    org.springframework.data.domain.Page<FriendEntity> findByUserIdAndStatus(
+        Long userId,
+        FriendStatus status,
+        org.springframework.data.domain.Pageable pageable
+    );
+
+    /**
+     * 친구 요청 가능 여부 확인 (양방향 체크)
+     */
+    @Query("SELECT CASE WHEN COUNT(fr) > 0 THEN true ELSE false END FROM FriendRequestEntity fr " +
+           "WHERE ((fr.fromUserId = :userId1 AND fr.toUserId = :userId2) " +
+           "OR (fr.fromUserId = :userId2 AND fr.toUserId = :userId1)) " +
+           "AND fr.status = 'PENDING'")
+    boolean hasAnyPendingRequest(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
 }
