@@ -1,41 +1,23 @@
 {
-  "name": "SecureChat - 안전한 메신저",
-  "short_name": "SecureChat",
-  "description": "텔레그램과 카카오톡을 결합한 안전한 메신저 앱",
+  "name": "HANA - 하나로 연결하다",
+  "short_name": "HANA",
+  "description": "가장 기본적인 메신저 - 카카오톡을 대체할 간단하고 안전한 메신저 앱",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#0078d4",
+  "theme_color": "#7C3AED",
   "orientation": "portrait-primary",
   "categories": ["social", "communication"],
   "lang": "ko",
   "icons": [
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNzIiIGhlaWdodD0iNzIiIHZpZXdCb3g9IjAgMCA3MiA3MiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjcyIiBoZWlnaHQ9IjcyIiByeD0iMTYiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8cGF0aCBkPSJNMzYgMjBDMjcuMTYgMjAgMjAgMjcuMTYgMjAgMzZTMjcuMTYgNTIgMzYgNTJTNTIgNDQuODQgNTIgMzZTNDQuODQgMjAgMzYgMjBaTTQyIDM4SDMwQzI4LjkgMzggMjggMzcuMSAyOCAzNlMyOC45IDM0IDMwIDM0SDQyQzQzLjEgMzQgNDQgMzQuOSA0NCAzNlM0My4xIDM4IDQyIDM4WiIgZmlsbD0id2hpdGUiLz4KPGF0ZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MCIgeDE9IjAiIHkxPSIwIiB4Mj0iNzIiIHkyPSI3MiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMDA3OEQ0Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzYyNjRBNyIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=",
-      "sizes": "72x72",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiByeD0iMjQiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8cGF0aCBkPSJNNDggMjhDMzcuNTA3IDI4IDI5IDM2LjUwNyAyOSA0N1MzNy41MDcgNjYgNDggNjZTNjcgNTcuNDkzIDY3IDQ3UzU4LjQ5MyAyOCA0OCAyOFpNNTYgNDlINDBDMzguMzQzIDQ5IDM3IDQ3LjY1NyAzNyA0NlMzOC4zNDMgNDMgNDAgNDNINTZDNTcuNjU3IDQzIDU5IDQ0LjM0MyA1OSA0NlM1Ny42NTcgNDkgNTYgNDlaIiBmaWxsPSJ3aGl0ZSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDAiIHgxPSIwIiB5MT0iMCIgeDI9Ijk2IiB5Mj0iOTYiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KPHN0b3Agc3RvcC1jb2xvcj0iIzAwNzhENCIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM2MjY0QTciLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K",
-      "sizes": "96x96",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQ0IiBoZWlnaHQ9IjE0NCIgdmlld0JveD0iMCAwIDE0NCAxNDQiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNDQiIGhlaWdodD0iMTQ0IiByeD0iMzIiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8cGF0aCBkPSJNNzIgNDBDNTkuMjkxIDQwIDQ5IDUwLjI5MSA0OSA2M1M1OS4yOTEgODYgNzIgODZTOTUgNzUuNzA5IDk1IDYzUzg0LjcwOSA0MCA3MiA0MFpNODMgNjZINjFDNTguMjM5IDY2IDU2IDYzLjc2MSA1NiA2MVM1OC4yMzkgNTYgNjEgNTZIODNDODUuNzYxIDU2IDg4IDU4LjIzOSA4OCA2MVM4NS43NjEgNjYgODMgNjZaIiBmaWxsPSJ3aGl0ZSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDAiIHgxPSIwIiB5MT0iMCIgeDI9IjE0NCIgeTI9IjE0NCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMDA3OEQ0Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzYyNjRBNyIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=",
-      "sizes": "144x144",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iNDgiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8cGF0aCBkPSJNOTYgNTJDNzguMzI3IDUyIDY0IDY2LjMyNyA2NCA4NFM3OC4zMjcgMTE2IDk2IDExNlMxMjggMTAxLjY3MyAxMjggODRTMTEzLjY3MyA1MiA5NiA1MlpNMTEwIDg3SDgyQzc4LjY4NiA4NyA3NiA4NC4zMTQgNzYgODFTNzguNjg2IDc1IDgyIDc1SDExMEMxMTMuMzE0IDc1IDExNiA3Ny42ODYgMTE2IDgxUzExMy4zMTQgODcgMTEwIDg3WiIgZmlsbD0id2hpdGUiLz4KPGR2Zz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDAiIHgxPSIwIiB5MT0iMCIgeDI9IjE5MiIgeTI9IjE5MiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMDA3OEQ0Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzYyNjRBNyIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=",
+      "src": "/icon-192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTI4IiBmaWxsPSJ1cmwoI2dyYWRpZW50MCkiLz4KPHBhdGggZD0iTTI1NiAxNDBDMjA5Ljk2IDE0MCAxNzMgMTc2Ljk2IDE3MyAyMjNTMjEwIDMwNiAyNTYgMzA2UzMzOSAyNjkuMDQgMzM5IDIyM1MzMDIuMDQgMTQwIDI1NiAxNDBaTTI5MyAyMzZIMjE5QzIxMC43MTYgMjM2IDIwNCAyMjkuMjg0IDIwNCAyMjFTMjEwLjcxNiAyMDYgMjE5IDIwNkgyOTNDMzAxLjI4NCAyMDYgMzA4IDIxMi43MTYgMzA4IDIyMVMzMDEuMjg0IDIzNiAyOTMgMjM2WiIgZmlsbD0id2hpdGUiLz4KPGR0Zz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDAiIHgxPSIwIiB5MT0iMCIgeDI9IjUxMiIgeTI9IjUxMiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMDA3OEQ0Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzYyNjRBNyIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=",
+      "src": "/icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"

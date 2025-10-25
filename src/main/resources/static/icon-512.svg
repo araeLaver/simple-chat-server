@@ -1,0 +1,13 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="hanaBrand" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7C3AED"/>
+      <stop offset="100%" style="stop-color:#C084FC"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#hanaBrand)"/>
+  <rect x="128" y="154" width="90" height="204" rx="20" fill="white"/>
+  <rect x="294" y="154" width="90" height="204" rx="20" fill="white"/>
+  <circle cx="256" cy="256" r="26" fill="white" opacity="0.9"/>
+  <circle cx="256" cy="256" r="16" fill="url(#hanaBrand)"/>
+</svg>
