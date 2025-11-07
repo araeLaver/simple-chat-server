@@ -6,9 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChatRoom {
     private String roomId;
     private String roomName;
-    private RoomType roomType = RoomType.NORMAL;
-    private String encryptionKey;
-    private String password;
+    private RoomType roomType = RoomType.GROUP;
     private String creator;
     private String description;
     private Map<String, User> users;
@@ -25,32 +23,22 @@ public class ChatRoom {
         this.createdTime = System.currentTimeMillis();
     }
     
-    public ChatRoom(String roomId, String roomName, RoomType roomType, String password) {
+    public ChatRoom(String roomId, String roomName, RoomType roomType) {
         this.roomId = roomId;
         this.roomName = roomName;
         this.roomType = roomType;
-        this.password = password;
         this.users = new ConcurrentHashMap<>();
         this.createdTime = System.currentTimeMillis();
-        
-        if (roomType == RoomType.SECRET) {
-            this.encryptionKey = EncryptionUtil.generateRoomKey(roomId, password != null ? password : "");
-        }
     }
 
-    public ChatRoom(String roomId, String roomName, RoomType roomType, String password, String creator, String description) {
+    public ChatRoom(String roomId, String roomName, RoomType roomType, String creator, String description) {
         this.roomId = roomId;
         this.roomName = roomName;
         this.roomType = roomType;
-        this.password = password;
         this.creator = creator;
         this.description = description;
         this.users = new ConcurrentHashMap<>();
         this.createdTime = System.currentTimeMillis();
-        
-        if (roomType == RoomType.SECRET) {
-            this.encryptionKey = EncryptionUtil.generateRoomKey(roomId, password != null ? password : "");
-        }
     }
 
     public String getRoomId() {
@@ -105,24 +93,12 @@ public class ChatRoom {
         this.roomType = roomType;
     }
 
-    public String getEncryptionKey() {
-        return encryptionKey;
+    public boolean isDirectMessage() {
+        return roomType == RoomType.DIRECT;
     }
 
-    public void setEncryptionKey(String encryptionKey) {
-        this.encryptionKey = encryptionKey;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-    
-    public boolean isSecureRoom() {
-        return roomType == RoomType.SECRET || roomType == RoomType.VOLATILE;
+    public boolean isGroupChat() {
+        return roomType == RoomType.GROUP;
     }
 
     public String getCreator() {
@@ -141,8 +117,4 @@ public class ChatRoom {
         this.description = description;
     }
 
-    public boolean verifyPassword(String inputPassword) {
-        if (password == null) return true;
-        return password.equals(inputPassword);
-    }
 }

@@ -132,10 +132,115 @@ public class AuthController {
             return ResponseEntity.badRequest().body(response);
         }
         
+        // 마지막 로그인 시간 업데이트
+        user.setLastLogin(java.time.LocalDateTime.now());
+        userRepository.save(user);
+
         response.put("message", "로그인 성공");
+        response.put("userId", String.valueOf(user.getId()));
         response.put("username", username);
-        
+        response.put("email", user.getEmail());
+        response.put("profileImage", user.getProfileImage());
+        response.put("statusMessage", user.getStatusMessage());
+
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/profile/update")
+    public ResponseEntity<Map<String, String>> updateProfile(@RequestBody Map<String, String> request) {
+        Map<String, String> response = new HashMap<>();
+
+        String userId = request.get("userId");
+        String profileImage = request.get("profileImage");
+        String statusMessage = request.get("statusMessage");
+
+        if (userId == null) {
+            response.put("error", "사용자 ID가 필요합니다.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        try {
+            Optional<UserEntity> userOpt = userRepository.findById(Long.parseLong(userId));
+
+            if (userOpt.isEmpty()) {
+                response.put("error", "존재하지 않는 사용자입니다.");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            UserEntity user = userOpt.get();
+
+            if (profileImage != null) {
+                user.setProfileImage(profileImage);
+            }
+
+            if (statusMessage != null) {
+                user.setStatusMessage(statusMessage);
+            }
+
+            userRepository.save(user);
+
+            response.put("message", "프로필이 업데이트되었습니다.");
+            response.put("profileImage", user.getProfileImage());
+            response.put("statusMessage", user.getStatusMessage());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            System.err.println("프로필 업데이트 오류: " + e.getMessage());
+            response.put("error", "프로필 업데이트 중 오류가 발생했습니다.");
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<Map<String, Object>> getUserProfile(@PathVariable Long userId) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            Optional<UserEntity> userOpt = userRepository.findById(userId);
+
+            if (userOpt.isEmpty()) {
+                response.put("error", "존재하지 않는 사용자입니다.");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            UserEntity user = userOpt.get();
+
+            Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("id", user.getId());
+            userInfo.put("username", user.getUsername());
+            userInfo.put("email", user.getEmail());
+            userInfo.put("profileImage", user.getProfileImage());
+            userInfo.put("statusMessage", user.getStatusMessage());
+            userInfo.put("lastLogin", user.getLastLogin());
+
+            response.put("success", true);
+            response.put("user", userInfo);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("error", "사용자 정보 조회 중 오류가 발생했습니다.");
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Map<String, Object>> searchUsers(@RequestParam String keyword) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            var users = userRepository.findByUsernameContaining(keyword);
+
+            response.put("success", true);
+            response.put("users", users);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("error", "사용자 검색 중 오류가 발생했습니다.");
+            return ResponseEntity.internalServerError().body(response);
+        }
     }
     
     // 간단한 해시 함수 (실제로는 BCrypt 사용 권장)

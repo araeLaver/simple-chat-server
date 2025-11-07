@@ -7,16 +7,17 @@ public class ChatMessage {
     private String type;
     private String roomId;
     private MessageSecurityType securityType = MessageSecurityType.NORMAL;
-    private Integer volatileDuration;
-    private String encryptionKey;
-    private Boolean isEncrypted = false;
-    
+
+    // 사용자 ID (1:1 채팅 및 친구 기능용)
+    private Long userId;
+    private Long friendId;
+    private String friendName;
+
     // 방 생성용 필드들
     private String roomName;
     private String roomType;
     private String creator;
     private String description;
-    private String password;
 
     public ChatMessage() {}
 
@@ -82,28 +83,28 @@ public class ChatMessage {
         this.securityType = securityType;
     }
 
-    public Integer getVolatileDuration() {
-        return volatileDuration;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setVolatileDuration(Integer volatileDuration) {
-        this.volatileDuration = volatileDuration;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
-    public String getEncryptionKey() {
-        return encryptionKey;
+    public Long getFriendId() {
+        return friendId;
     }
 
-    public void setEncryptionKey(String encryptionKey) {
-        this.encryptionKey = encryptionKey;
+    public void setFriendId(Long friendId) {
+        this.friendId = friendId;
     }
 
-    public Boolean getIsEncrypted() {
-        return isEncrypted;
+    public String getFriendName() {
+        return friendName;
     }
 
-    public void setIsEncrypted(Boolean isEncrypted) {
-        this.isEncrypted = isEncrypted;
+    public void setFriendName(String friendName) {
+        this.friendName = friendName;
     }
 
     // 방 생성용 getter/setter
@@ -137,13 +138,5 @@ public class ChatMessage {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 }

@@ -15,8 +15,8 @@ public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
     List<MessageEntity> findTop50ByRoomIdOrderByTimestampDesc(@Param("roomId") String roomId);
     
     List<MessageEntity> findByRoomIdOrderByTimestampAsc(String roomId);
-    
-    List<MessageEntity> findByExpiresAtBefore(LocalDateTime dateTime);
-    
-    List<MessageEntity> findBySecurityTypeAndTimestampBefore(MessageSecurityType securityType, LocalDateTime dateTime);
+
+    // 보안 기능 제거로 인해 더 이상 사용하지 않음 (필요시 재활성화 가능)
+    // List<MessageEntity> findByExpiresAtBefore(LocalDateTime dateTime);
+    // List<MessageEntity> findBySecurityTypeAndTimestampBefore(MessageSecurityType securityType, LocalDateTime dateTime);
 }
