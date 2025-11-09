@@ -1,163 +1,227 @@
-# 🔐 SecureChat - 실시간 보안 채팅 서버
+# ⚡ BEAM - 글로벌 보안 메신저
 
-안전하고 직관적인 실시간 채팅 애플리케이션입니다.
+**Messages at the speed of light.**
+
+안전하고 빠른 차세대 글로벌 메신저 플랫폼입니다.
+
+## 🎯 BEAM이란?
+
+BEAM은 프라이버시와 속도를 최우선으로 하는 메신저입니다.
+빛처럼 빠르게 전달되는 안전한 대화를 경험하세요.
+
+### 핵심 가치
+- 🔒 **보안 우선**: E2E 암호화로 완벽한 프라이버시 보호
+- ⚡ **초고속**: 실시간 메시지 전송, 지연 제로
+- 🌍 **글로벌**: 전 세계 누구와도 소통
+- 🎨 **직관적**: 배우지 않아도 사용할 수 있는 UI
 
 ## ✨ 주요 기능
 
-### 🏠 사용자 맞춤 채팅방
-- **방 생성**: 일반방, 비밀방, 임시방 생성 가능
-- **방장 권한**: 👑 방장 표시 및 비밀방 비밀번호 상시 확인
-- **보안 모드별 분리**: 탭별로 다른 보안 레벨의 방들만 표시
+### 💬 메시징
+- **1:1 채팅**: 개인 메시지 전송 (DM)
+- **그룹 채팅**: 최대 100명까지 그룹 대화
+- **읽음 표시**: 메시지 전달/읽음 확인
+- **메시지 검색**: 전체 대화 내역 검색
+- **타이핑 인디케이터**: 상대방 입력 중 표시
 
-### 🔒 강력한 보안 시스템
-- **비밀방**: 비밀번호로 보호되는 암호화된 채팅
-- **임시방**: 메시지가 자동으로 삭제되는 휘발성 채팅
-- **일반방**: 표준 채팅 환경
+### 👥 소셜 기능
+- **친구 시스템**: 친구 요청/수락/거절
+- **사용자 검색**: 전화번호/아이디 검색
+- **온라인 상태**: 실시간 접속 상태 표시
+- **차단 기능**: 원치 않는 사용자 차단
 
-### 🎨 사용자 경험
-- **반응형 디자인**: 모바일/데스크톱 최적화
-- **다크모드**: 테마 전환 지원
-- **PWA 지원**: 앱처럼 설치 가능
-- **실시간 알림**: 새 메시지 데스크톱 알림
+### 📁 파일 & 미디어
+- **파일 전송**: 최대 10MB 파일 공유
+- **이미지 업로드**: 자동 썸네일 생성 (200px)
+- **다운로드 추적**: 다운로드 횟수 카운트
+- **파일 분류**: IMAGE, VIDEO, AUDIO, DOCUMENT
 
-### 👥 사용자 시스템
-- **게스트 모드**: 회원가입 없이 즉시 채팅 시작
-- **회원 시스템**: 계정 생성으로 추가 기능 이용
+### 🔐 보안
+- **JWT 인증**: 안전한 토큰 기반 인증
+- **BCrypt**: 비밀번호 암호화
+- **전화번호 인증**: 본인 인증 프레임워크
 
 ## 🛠 기술 스택
 
 ### Backend
 - **Java 17** + **Spring Boot 3.2**
-- **WebSocket** (실시간 통신)
-- **Spring Data JPA** (데이터 액세스)
-- **PostgreSQL** (운영 DB) / **H2** (개발/테스트)
-- **암호화**: AES-256 (비밀방 메시지)
+- **WebSocket** (STOMP 프로토콜, SockJS 폴백)
+- **Spring Data JPA** (ORM, Hibernate)
+- **Spring Security** (JWT 인증)
+- **PostgreSQL** (운영 DB) / **H2** (개발 DB)
+- **Lombok** (코드 간결화)
+- **Maven** (빌드 도구)
 
-### Frontend
-- **Vanilla JavaScript** (경량화)
-- **Modern CSS** (Grid, Flexbox, CSS Variables)
-- **Service Worker** (PWA)
-- **WebSocket API** (실시간 통신)
+### 메시징 아키텍처
+- **STOMP over WebSocket**: 실시간 양방향 통신
+- **/topic**: 그룹 채팅 브로드캐스트
+- **/queue**: 개인 메시지 (point-to-point)
+- **SockJS**: WebSocket 미지원 브라우저 폴백
 
-### 배포 & 인프라
+### 데이터베이스 설계
+- **14개 엔티티**: User, DirectMessage, Conversation, Friend, Room, RoomMember, GroupMessage, FileMetadata, ReadReceipt 등
+- **인덱스 최적화**: 조회 성능 향상
+- **트랜잭션 관리**: @Transactional
+
+### 인프라
 - **Docker** (컨테이너화)
-- **Koyeb** (클라우드 플랫폼)
-- **GitHub Actions** (CI/CD)
+- **Koyeb/AWS** (클라우드 배포)
+- **HikariCP** (커넥션 풀)
 
-## 🚀 배포 가이드
-
-### Koyeb 배포 설정
-
-1. **환경 변수 설정**:
-```
-DATABASE_URL=jdbc:postgresql://your-db-host/koyebdb?currentSchema=chatapp_prod&sslmode=require
-DATABASE_USERNAME=your-username
-DATABASE_PASSWORD=your-password
-CORS_ALLOWED_ORIGINS=https://your-domain.com
-SPRING_PROFILES_ACTIVE=prod
-```
-
-2. **배포 명령어**:
-```bash
-# Docker 이미지 빌드 및 푸시
-docker build -t secure-chat .
-docker push your-registry/secure-chat
-
-# 또는 Koyeb GitHub 연동으로 자동 배포
-```
+## 🚀 빠른 시작
 
 ### 로컬 개발 환경
 
 ```bash
-# 프로젝트 클론
-git clone https://github.com/your-username/simple-chat-server.git
-cd simple-chat-server
+# 저장소 클론
+git clone https://github.com/your-org/beam-server.git
+cd beam-server
 
 # Maven 빌드
 mvn clean install
 
-# 로컬 실행 (H2 DB 사용)
-mvn spring-boot:run -Dspring-boot.run.profiles=local
+# 로컬 실행 (H2 인메모리 DB)
+mvn spring-boot:run
 
-# 개발 환경 실행 (PostgreSQL 사용)
-mvn spring-boot:run -Dspring-boot.run.profiles=dev
+# 브라우저에서 접속
+open http://localhost:8080
 ```
 
-## 📦 Docker 빌드
+### Docker 실행
 
 ```bash
-# 멀티스테이지 빌드로 최적화된 이미지 생성
-docker build -t secure-chat .
+# 이미지 빌드
+docker build -t beam-server .
 
 # 컨테이너 실행
 docker run -p 8080:8080 \
-  -e SPRING_PROFILES_ACTIVE=prod \
-  -e DATABASE_URL=your-db-url \
-  -e DATABASE_USERNAME=your-username \
-  -e DATABASE_PASSWORD=your-password \
-  secure-chat
+  -e SPRING_PROFILES_ACTIVE=local \
+  beam-server
+```
+
+## 📦 배포
+
+### 프로덕션 환경 변수
+
+```bash
+DATABASE_URL=jdbc:postgresql://host/db?sslmode=require
+DATABASE_USERNAME=your_username
+DATABASE_PASSWORD=your_password
+SPRING_PROFILES_ACTIVE=prod
+CORS_ALLOWED_ORIGINS=https://beam.chat
+```
+
+### Koyeb 배포
+
+```bash
+# GitHub 저장소 연동 후 자동 배포
+# 또는 Docker 이미지 배포
+docker push your-registry/beam-server:latest
 ```
 
 ## 🏗 아키텍처
 
 ```
-Frontend (Vanilla JS + CSS)
-    ↕ WebSocket
-Backend (Spring Boot)
-    ↕ JPA
-Database (PostgreSQL / H2)
+┌─────────────────┐
+│  Frontend (SPA) │
+│  Vanilla JS     │
+└────────┬────────┘
+         │ WebSocket
+         ↓
+┌─────────────────┐
+│  Spring Boot    │
+│  WebSocket      │
+│  REST API       │
+└────────┬────────┘
+         │ JPA
+         ↓
+┌─────────────────┐
+│  PostgreSQL     │
+│  (Messages/User)│
+└─────────────────┘
 ```
 
 ### 보안 계층
-- **전송 계층**: WSS (WebSocket Secure)
-- **애플리케이션 계층**: 메시지별 암호화 (비밀방)
+- **전송 계층**: WSS (WebSocket Secure) / HTTPS
+- **애플리케이션 계층**: E2E 암호화 (비밀 채팅)
 - **데이터베이스**: SSL 연결, 암호화된 비밀번호
 
-## 📱 PWA 기능
+## 🎯 로드맵
 
-- **오프라인 지원**: Service Worker 캐싱
-- **설치 가능**: 브라우저에서 앱으로 설치
-- **푸시 알림**: 새 메시지 알림 (예정)
-- **반응형**: 모든 디바이스에서 최적화
+### Phase 1: MVP ✅ (현재)
+- [x] 실시간 채팅 (WebSocket)
+- [x] 채팅방 생성/관리
+- [x] 보안 모드 (일반/비밀/임시)
+- [x] PWA 지원
 
-## 🔧 개발 도구
+### Phase 2: 핵심 기능 ✅ (완료)
+- [x] JWT 기반 인증 시스템
+- [x] 1:1 채팅 (DM)
+- [x] 친구 시스템 (요청/수락/거절/차단)
+- [x] 그룹 채팅 (방 생성/관리/권한)
+- [x] 파일 전송 (이미지 썸네일 자동 생성)
+- [x] 읽음 표시 (Read Receipts)
+- [x] 메시지 검색
+- [x] WebSocket 실시간 통신
+- [x] 타이핑 인디케이터
+- [x] 온라인 상태 실시간 업데이트
+
+### Phase 3: 확장 (계획)
+- [ ] 음성/영상 통화 (WebRTC)
+- [ ] 크로스 플랫폼 앱 (React Native)
+- [ ] 다국어 지원 (i18n)
+- [ ] 봇 API
+- [ ] 채널/브로드캐스트
+
+### Phase 4: 글로벌화 (미래)
+- [ ] 오픈소스 클라이언트
+- [ ] 블록체인 투명성 감사
+- [ ] 익명 아이디 지원
+- [ ] 탈중앙화 아키텍처
+
+## 🔧 개발 가이드
 
 ### 프로파일 설정
-- `local`: H2 메모리 DB, 개발용 설정
-- `dev`: PostgreSQL, 개발 서버용
-- `prod`: PostgreSQL, 운영 서버용 최적화
+- `local`: H2 인메모리 DB, 빠른 개발
+- `dev`: PostgreSQL, 개발 서버
+- `prod`: PostgreSQL, 운영 최적화
 
-### 데이터베이스 마이그레이션
-```sql
--- 운영 DB 스키마 생성
-CREATE SCHEMA IF NOT EXISTS chatapp_prod;
-```
+### 코드 스타일
+- **언어**: Java 17+
+- **포맷**: Google Java Style Guide
+- **컨벤션**: RESTful API, Semantic Commit
 
-## 🌟 주요 특징
+### 기여하기
+1. Fork this repository
+2. Create your feature branch (`git checkout -b feature/amazing`)
+3. Commit your changes (`git commit -m 'feat: Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing`)
+5. Open a Pull Request
 
-### 실시간 통신
-- WebSocket 기반 즉시 메시지 전송
-- 연결 끊김 시 자동 재연결
-- 사용자 온라인 상태 실시간 표시
-
-### 메시지 보안
-- **일반**: 표준 채팅
-- **비밀**: AES-256 암호화 + 비밀번호 보호
-- **임시**: 시간 기반 자동 삭제 (10초~5분)
-
-### 사용자 인터페이스
-- 직관적인 탭 기반 네비게이션
-- 방 생성 모달로 쉬운 설정
-- 방장 전용 기능 (비밀번호 표시 등)
-
-## 📈 성능 최적화
+## 📊 성능 최적화
 
 ### 백엔드
-- Connection Pool 최적화
-- JPA 배치 처리
-- G1GC 사용으로 낮은 지연시간
+- HikariCP Connection Pool
+- JPA 배치 처리 최적화
+- G1GC로 낮은 지연시간
+- Redis 캐싱 (예정)
 
 ### 프론트엔드
-- 바닐라 JS로 번들 크기 최소화
-- CSS Variables로 테마 전환 최적화
+- 번들 최소화 (Vanilla JS)
 - Service Worker 캐싱
+- Lazy Loading
+- CSS Variables로 테마 전환 최적화
+
+## 📄 라이선스
+
+MIT License - 자유롭게 사용하고 수정하세요
+
+## 💬 커뮤니티
+
+- **Website**: https://beam.chat (예정)
+- **Twitter**: @beamchat (예정)
+- **Discord**: discord.gg/beam (예정)
+
+---
+
+**⚡ BEAM - Messages at the speed of light.**

@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(find:*)",
+      "Bash(for file in src/main/java/com/beam/*.java)",
+      "Bash(do sed -i 's/package com\\.chat;/package com.beam;/g' \"$file\")",
+      "Bash(done)",
+      "Bash(mvn clean:*)",
+      "Bash(mvn:*)",
+      "Bash(curl:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(powershell Stop-Process:*)",
+      "Bash(timeout:*)",
+      "Bash(dir \"C:\\Develop\\unble\\simple-chat-server\\simple-chat-server\\src\\main\\resources\\static\")",
+      "Bash(dir:*)",
+      "Bash(java:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

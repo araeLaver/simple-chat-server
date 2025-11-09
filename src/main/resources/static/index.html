@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#0078d4">
+    <meta name="theme-color" content="#10B981">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="SecureChat">
+    <meta name="apple-mobile-web-app-title" content="BEAM">
     <meta name="mobile-web-app-capable" content="yes">
     
-    <title>🔐 SecureChat - 안전한 메신저</title>
+    <title>⚡ BEAM - Messages at the speed of light</title>
     <link rel="manifest" href="/manifest.json">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
     
     <!-- iOS PWA 아이콘 -->
     <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iNDAiIGZpbGw9InVybCgjZ3JhZGllbnQwKSIvPgo8cGF0aCBkPSJNOTAgNDhDNzQuMzI3IDQ4IDYyIDYwLjMyNyA2MiA3NlM3NC4zMjcgMTA0IDkwIDEwNFMxMTggOTEuNjczIDExOCA3NlMxMDUuNjczIDQ4IDkwIDQ4Wk0xMDIgNzlINzhDNzUuMjM5IDc5IDczIDc2Ljc2MSA3MyA3NFM3NS4yMzkgNjkgNzggNjlIMTAyQzEwNC43NjEgNjkgMTA3IDcxLjIzOSAxMDcgNzRTMTA0Ljc2MSA3OSAxMDIgNzlaIiBmaWxsPSJ3aGl0ZSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudDAiIHgxPSIwIiB5MT0iMCIgeDI9IjE4MCIgeTI9IjE4MCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjMDA3OEQ0Ii8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzYyNjRBNyIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=">
@@ -20,7 +20,7 @@
         /* CSS 변수 정의 */
         :root {
             /* 기본 색상 팔레트 */
-            --primary: #0078d4;
+            --primary: #10B981;
             --primary-light: #40a9ff;
             --primary-dark: #005a9e;
             --secondary: #6264a7;
@@ -1336,7 +1336,7 @@
     <div class="login-modal" id="loginModal">
         <div class="login-form">
             <div class="login-header">
-                <h1 class="login-title">🔐 SecureChat</h1>
+                <h1 class="login-title">🔐 BEAM</h1>
                 <p class="login-subtitle">안전하고 아름다운 메신저에 오신 것을 환영합니다</p>
             </div>
 
@@ -1582,7 +1582,7 @@
     </div>
 
     <script>
-        class SecureChatApp {
+        class BEAMApp {
             constructor() {
                 this.ws = null;
                 this.currentUser = '';
@@ -2747,7 +2747,7 @@
 
         // 앱 초기화
         document.addEventListener('DOMContentLoaded', () => {
-            window.chatApp = new SecureChatApp();
+            window.chatApp = new BEAMApp();
         });
 
         // 알림 권한 요청
