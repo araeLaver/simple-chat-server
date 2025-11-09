@@ -29,12 +29,14 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Autowired
     private MessageService messageService;
 
+    @Autowired
+    private FriendService friendService;
+
     public ChatWebSocketHandler() {
-        chatRooms.put("general", new ChatRoom("general", "일반 채팅방", RoomType.NORMAL, null));
-        chatRooms.put("tech", new ChatRoom("tech", "개발 이야기", RoomType.NORMAL, null));
-        chatRooms.put("casual", new ChatRoom("casual", "자유 토론", RoomType.NORMAL, null));
-        chatRooms.put("secret", new ChatRoom("secret", "🔐 비밀 대화", RoomType.SECRET, "secret123"));
-        chatRooms.put("volatile", new ChatRoom("volatile", "⏰ 임시 채팅", RoomType.VOLATILE, null));
+        // 기본 그룹 채팅방들
+        chatRooms.put("general", new ChatRoom("general", "일반 채팅방", RoomType.GROUP));
+        chatRooms.put("tech", new ChatRoom("tech", "개발 이야기", RoomType.GROUP));
+        chatRooms.put("casual", new ChatRoom("casual", "자유 토론", RoomType.GROUP));
     }
 
     @Override
@@ -62,10 +64,10 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 if (roomId != null) {
                     chatMessage.setType("message");
                     chatMessage.setRoomId(roomId);
-                    
+                    chatMessage.setSecurityType(MessageSecurityType.NORMAL);
+
                     ChatRoom room = chatRooms.get(roomId);
                     if (room != null) {
-                        processSecureMessage(chatMessage, room);
                         messageService.saveMessage(chatMessage);
                         broadcastToRoom(roomId, chatMessage);
                     }
@@ -82,11 +84,30 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
                 String roomId = chatMessage.getRoomId();
                 if (roomId != null) {
                     sendMessageHistory(session, roomId);
+                    // 메시지 히스토리를 불러온 후 읽음 처리
+                    if (chatMessage.getUserId() != null) {
+                        messageService.markRoomMessagesAsRead(roomId, chatMessage.getUserId(), chatMessage.getSender());
+                    }
+                }
+            } else if ("markAsRead".equals(chatMessage.getType())) {
+                // 채팅방 입장 시 읽음 처리
+                String roomId = chatMessage.getRoomId();
+                Long userId = chatMessage.getUserId();
+                String username = chatMessage.getSender();
+                if (roomId != null && userId != null) {
+                    messageService.markRoomMessagesAsRead(roomId, userId, username);
+                    // 읽음 상태 업데이트를 전체에 브로드캐스트
+                    ChatMessage readUpdate = new ChatMessage("시스템",
+                        username + "님이 메시지를 읽었습니다.",
+                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                        "readUpdate");
+                    readUpdate.setRoomId(roomId);
+                    broadcastToRoom(roomId, readUpdate);
                 }
             } else if ("createRoom".equals(chatMessage.getType())) {
                 handleCreateRoom(session, chatMessage);
-            } else if ("joinSecretRoom".equals(chatMessage.getType())) {
-                handleJoinSecretRoom(session, chatMessage);
+            } else if ("createDirectMessage".equals(chatMessage.getType())) {
+                handleCreateDirectMessage(session, chatMessage);
             } else if ("deleteRoom".equals(chatMessage.getType())) {
                 handleDeleteRoom(session, chatMessage);
             }
@@ -176,9 +197,8 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             roomInfo.put("userCount", room.getUserCount());
             roomInfo.put("creator", room.getCreator());
             roomInfo.put("description", room.getDescription());
-            roomInfo.put("isSecureRoom", room.isSecureRoom());
-            // 비밀번호는 보안상 전송하지 않음
-            
+            roomInfo.put("isDirectMessage", room.isDirectMessage());
+
             roomDetails.add(roomInfo);
         }
         
@@ -197,10 +217,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         ChatRoom room = chatRooms.get(roomId);
         
         for (MessageEntity msg : messages) {
-            if (msg.isExpired()) {
-                continue;
-            }
-            
             ChatMessage historyMessage = new ChatMessage(
                 msg.getSender(), 
                 msg.getContent(), 
@@ -209,12 +225,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             );
             historyMessage.setRoomId(roomId);
             historyMessage.setSecurityType(msg.getSecurityType());
-            historyMessage.setIsEncrypted(msg.getIsEncrypted());
-            
-            if (room != null) {
-                historyMessage = decryptMessageForDisplay(historyMessage, room);
-            }
-            
+
             if (session.isOpen()) {
                 session.sendMessage(new TextMessage(objectMapper.writeValueAsString(historyMessage)));
             }
@@ -237,98 +248,32 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         System.out.println("연결 종료: " + session.getId());
     }
     
-    private void processSecureMessage(ChatMessage chatMessage, ChatRoom room) {
-        switch (room.getRoomType()) {
-            case SECRET:
-                chatMessage.setSecurityType(MessageSecurityType.SECRET);
-                if (room.getEncryptionKey() != null) {
-                    try {
-                        String encryptedContent = EncryptionUtil.encrypt(chatMessage.getContent(), room.getEncryptionKey());
-                        chatMessage.setContent(encryptedContent);
-                        chatMessage.setIsEncrypted(true);
-                        chatMessage.setEncryptionKey(room.getEncryptionKey());
-                    } catch (Exception e) {
-                        System.err.println("암호화 실패: " + e.getMessage());
-                    }
-                }
-                break;
-                
-            case VOLATILE:
-                chatMessage.setSecurityType(MessageSecurityType.VOLATILE);
-                if (chatMessage.getVolatileDuration() != null && chatMessage.getVolatileDuration() > 0) {
-                    LocalDateTime expiryTime = LocalDateTime.now().plusSeconds(chatMessage.getVolatileDuration());
-                    chatMessage.setType("volatile");
-                }
-                break;
-                
-            case NORMAL:
-            default:
-                chatMessage.setSecurityType(MessageSecurityType.NORMAL);
-                break;
-        }
-    }
-    
-    private ChatMessage decryptMessageForDisplay(ChatMessage message, ChatRoom room) {
-        if (message.getIsEncrypted() != null && message.getIsEncrypted() && 
-            room.getRoomType() == RoomType.SECRET && room.getEncryptionKey() != null) {
-            try {
-                String decryptedContent = EncryptionUtil.decrypt(message.getContent(), room.getEncryptionKey());
-                ChatMessage decryptedMessage = new ChatMessage(
-                    message.getSender(), 
-                    decryptedContent, 
-                    message.getTimestamp(), 
-                    message.getType()
-                );
-                decryptedMessage.setRoomId(message.getRoomId());
-                decryptedMessage.setSecurityType(message.getSecurityType());
-                return decryptedMessage;
-            } catch (Exception e) {
-                System.err.println("복호화 실패: " + e.getMessage());
-                message.setContent("🔐 암호화된 메시지");
-            }
-        }
-        return message;
-    }
 
     private void handleCreateRoom(WebSocketSession session, ChatMessage message) throws Exception {
         try {
             String roomName = message.getRoomName();
-            String roomTypeStr = message.getRoomType();
             String creator = message.getCreator();
             String description = message.getDescription();
-            String password = message.getPassword();
-            
+
             if (roomName == null || roomName.trim().isEmpty()) {
                 sendErrorMessage(session, "방 이름을 입력하세요.");
                 return;
             }
-            
+
             // 방 이름 중복 체크
             if (isRoomNameDuplicate(roomName.trim())) {
                 sendErrorMessage(session, "이미 존재하는 방 이름입니다. 다른 이름을 사용해주세요.");
                 return;
             }
-            
+
             // 고유한 방 ID 생성
-            String roomId = "custom_" + System.currentTimeMillis();
-            
-            // 방 유형에 따른 RoomType 설정
-            RoomType type = RoomType.NORMAL;
-            if ("SECRET".equals(roomTypeStr)) {
-                type = RoomType.SECRET;
-                if (password == null || password.trim().isEmpty()) {
-                    sendErrorMessage(session, "비밀방은 비밀번호가 필요합니다.");
-                    return;
-                }
-            } else if ("VOLATILE".equals(roomTypeStr)) {
-                type = RoomType.VOLATILE;
-            }
-            
-            // 방 생성
-            ChatRoom newRoom = new ChatRoom(roomId, roomName.trim(), type, password, creator, description);
+            String roomId = "group_" + System.currentTimeMillis();
+
+            // 그룹 채팅방 생성
+            ChatRoom newRoom = new ChatRoom(roomId, roomName.trim(), RoomType.GROUP, creator, description);
             chatRooms.put(roomId, newRoom);
             
-            System.out.println("새 방 생성: " + roomName + " (" + type + ") by " + creator);
+            System.out.println("새 방 생성: " + roomName + " (GROUP) by " + creator);
             
             // 전체 사용자에게 방 목록 업데이트 전송
             broadcastRoomListUpdate();
@@ -349,31 +294,6 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
-    private void handleJoinSecretRoom(WebSocketSession session, ChatMessage message) throws Exception {
-        String roomId = message.getRoomId();
-        String password = message.getContent();
-        String username = message.getSender();
-        
-        ChatRoom room = chatRooms.get(roomId);
-        if (room == null) {
-            sendErrorMessage(session, "존재하지 않는 방입니다.");
-            return;
-        }
-        
-        if (room.getRoomType() != RoomType.SECRET) {
-            sendErrorMessage(session, "비밀방이 아닙니다.");
-            return;
-        }
-        
-        if (!room.verifyPassword(password)) {
-            sendErrorMessage(session, "비밀번호가 올바르지 않습니다.");
-            return;
-        }
-        
-        // 비밀번호가 맞으면 방에 입장
-        leaveCurrentRoom(session);
-        joinRoom(session, roomId, username);
-    }
 
     private void broadcastRoomListUpdate() throws Exception {
         for (WebSocketSession session : sessions) {
@@ -396,6 +316,72 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         return chatRooms.values().stream()
             .anyMatch(room -> room.getRoomName().equals(roomName));
     }
+
+    /**
+     * 1:1 다이렉트 메시지 채팅방 생성 또는 가져오기
+     */
+    private void handleCreateDirectMessage(WebSocketSession session, ChatMessage message) throws Exception {
+        try {
+            Long userId = message.getUserId();
+            Long friendId = message.getFriendId();
+            String username = message.getSender();
+
+            if (userId == null || friendId == null) {
+                sendErrorMessage(session, "사용자 ID가 필요합니다.");
+                return;
+            }
+
+            // 친구 관계 확인 (선택적 - 친구가 아니어도 DM 가능하게 하려면 주석 처리)
+            // if (!friendService.areFriends(userId, friendId)) {
+            //     sendErrorMessage(session, "친구 관계가 아닙니다.");
+            //     return;
+            // }
+
+            // 1:1 채팅방 ID 생성 (작은 ID가 앞에 오도록)
+            String roomId = createDirectMessageRoomId(userId, friendId);
+
+            // 이미 존재하는 채팅방인지 확인
+            ChatRoom existingRoom = chatRooms.get(roomId);
+
+            if (existingRoom == null) {
+                // 새로운 1:1 채팅방 생성
+                String roomName = "DM: " + username + " ↔ " + message.getFriendName();
+                ChatRoom newRoom = new ChatRoom(roomId, roomName, RoomType.DIRECT);
+                chatRooms.put(roomId, newRoom);
+
+                System.out.println("새 1:1 채팅방 생성: " + roomName);
+            }
+
+            // 전체 사용자에게 방 목록 업데이트 전송
+            broadcastRoomListUpdate();
+
+            // 생성자를 자동으로 방에 입장시킴
+            leaveCurrentRoom(session);
+            joinRoom(session, roomId, username);
+
+            // 성공 메시지 전송
+            ChatMessage successMessage = new ChatMessage("시스템",
+                "1:1 채팅방에 입장했습니다.",
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                "directMessageCreated");
+            successMessage.setRoomId(roomId);
+            session.sendMessage(new TextMessage(objectMapper.writeValueAsString(successMessage)));
+
+        } catch (Exception e) {
+            System.err.println("1:1 채팅방 생성 오류: " + e.getMessage());
+            sendErrorMessage(session, "1:1 채팅방 생성 중 오류가 발생했습니다.");
+        }
+    }
+
+    /**
+     * 두 사용자 ID로 고유한 1:1 채팅방 ID 생성
+     * 작은 ID가 항상 앞에 오도록 정렬
+     */
+    private String createDirectMessageRoomId(Long userId1, Long userId2) {
+        long smaller = Math.min(userId1, userId2);
+        long larger = Math.max(userId1, userId2);
+        return "dm_" + smaller + "_" + larger;
+    }
     
     private void handleDeleteRoom(WebSocketSession session, ChatMessage message) throws Exception {
         try {
@@ -414,8 +400,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             }
             
             // 기본 방은 삭제 불가
-            if (roomId.equals("general") || roomId.equals("tech") || roomId.equals("casual") || 
-                roomId.equals("secret") || roomId.equals("volatile")) {
+            if (roomId.equals("general") || roomId.equals("tech") || roomId.equals("casual")) {
                 sendErrorMessage(session, "기본 방은 삭제할 수 없습니다.");
                 return;
             }

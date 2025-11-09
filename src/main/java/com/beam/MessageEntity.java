@@ -33,15 +33,6 @@ public class MessageEntity {
     @Column(name = "security_type", nullable = false, length = 20)
     private MessageSecurityType securityType = MessageSecurityType.NORMAL;
     
-    @Column(name = "expires_at")
-    private LocalDateTime expiresAt;
-    
-    @Column(name = "encryption_key", length = 255)
-    private String encryptionKey;
-    
-    @Column(name = "is_encrypted", nullable = false)
-    private Boolean isEncrypted = false;
-    
     @Column(name = "file_url", length = 500)
     private String fileUrl;
     
@@ -121,34 +112,6 @@ public class MessageEntity {
 
     public void setSecurityType(MessageSecurityType securityType) {
         this.securityType = securityType;
-    }
-
-    public LocalDateTime getExpiresAt() {
-        return expiresAt;
-    }
-
-    public void setExpiresAt(LocalDateTime expiresAt) {
-        this.expiresAt = expiresAt;
-    }
-
-    public String getEncryptionKey() {
-        return encryptionKey;
-    }
-
-    public void setEncryptionKey(String encryptionKey) {
-        this.encryptionKey = encryptionKey;
-    }
-
-    public Boolean getIsEncrypted() {
-        return isEncrypted;
-    }
-
-    public void setIsEncrypted(Boolean isEncrypted) {
-        this.isEncrypted = isEncrypted;
-    }
-    
-    public boolean isExpired() {
-        return expiresAt != null && LocalDateTime.now().isAfter(expiresAt);
     }
 
     public Long getUserId() {
