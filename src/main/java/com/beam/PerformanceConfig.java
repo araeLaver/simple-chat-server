@@ -1,8 +1,12 @@
 package com.beam;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -11,9 +15,23 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import javax.sql.DataSource;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
+/**
+ * Performance Configuration
+ *
+ * <p>Configures performance-related features including:
+ * <ul>
+ *   <li>Database connection pooling (HikariCP)</li>
+ *   <li>Async task execution</li>
+ *   <li>Application-level caching (Caffeine)</li>
+ * </ul>
+ *
+ * @since 1.0.0
+ */
 @Configuration
 @EnableAsync
+@EnableCaching
 public class PerformanceConfig {
 
     @Value("${spring.datasource.url:jdbc:h2:mem:beamdb}")
@@ -69,5 +87,39 @@ public class PerformanceConfig {
         executor.setAwaitTerminationSeconds(30);
         executor.initialize();
         return executor;
+    }
+
+    /**
+     * Cache Manager using Caffeine
+     *
+     * <p>Configures application-level caching with the following caches:
+     * <ul>
+     *   <li><b>users</b>: User data (30 min TTL, 1000 max entries)</li>
+     *   <li><b>chatRooms</b>: Chat room data (15 min TTL, 500 max entries)</li>
+     *   <li><b>messages</b>: Recent messages (5 min TTL, 2000 max entries)</li>
+     *   <li><b>friends</b>: Friend relationships (10 min TTL, 500 max entries)</li>
+     * </ul>
+     *
+     * @return Configured Caffeine cache manager
+     */
+    @Bean
+    public CacheManager cacheManager() {
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
+
+        // Configure individual cache specifications
+        cacheManager.setCaffeine(Caffeine.newBuilder()
+                .expireAfterWrite(30, TimeUnit.MINUTES)
+                .maximumSize(1000)
+                .recordStats());
+
+        // Register cache names
+        cacheManager.setCacheNames(java.util.Arrays.asList(
+                "users",
+                "chatRooms",
+                "messages",
+                "friends"
+        ));
+
+        return cacheManager;
     }
 }

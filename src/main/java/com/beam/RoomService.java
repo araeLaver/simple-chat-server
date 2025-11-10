@@ -1,12 +1,23 @@
 package com.beam;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Room Service
+ *
+ * <p>Manages group chat rooms with caching for improved performance.
+ * Cache eviction occurs automatically on create/update/delete operations.
+ *
+ * @since 1.0.0
+ */
 @Service
 public class RoomService {
 
@@ -23,6 +34,7 @@ public class RoomService {
     private UserRepository userRepository;
 
     @Transactional
+    @CacheEvict(value = "chatRooms", key = "'userRooms:' + #creatorId")
     public RoomEntity createRoom(Long creatorId, String roomName, String description,
                                   RoomEntity.RoomType roomType, Integer maxMembers) {
 
@@ -55,6 +67,10 @@ public class RoomService {
     }
 
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "chatRooms", key = "'members:' + #roomId"),
+        @CacheEvict(value = "chatRooms", key = "'userRooms:' + #userId")
+    })
     public RoomEntity updateRoom(Long roomId, Long userId, String roomName,
                                   String description, Integer maxMembers) {
         RoomEntity room = roomRepository.findByIdAndIsActiveTrue(roomId)
@@ -76,6 +92,7 @@ public class RoomService {
     }
 
     @Transactional
+    @CacheEvict(value = "chatRooms", allEntries = true)
     public void deleteRoom(Long roomId, Long userId) {
         RoomEntity room = roomRepository.findByIdAndIsActiveTrue(roomId)
             .orElseThrow(() -> new RuntimeException("Room not found"));
@@ -184,6 +201,7 @@ public class RoomService {
     }
 
     @Transactional
+    @CacheEvict(value = "messages", key = "#roomId")
     public GroupMessageEntity sendMessage(Long roomId, Long senderId, String content,
                                           GroupMessageEntity.MessageType messageType) {
         RoomEntity room = roomRepository.findByIdAndIsActiveTrue(roomId)
@@ -230,6 +248,7 @@ public class RoomService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "messages", key = "#roomId")
     public List<GroupMessageEntity> getRoomMessages(Long roomId, Long userId) {
         roomMemberRepository.findByRoomIdAndUserIdAndIsActiveTrue(roomId, userId)
             .orElseThrow(() -> new RuntimeException("Not a member of this room"));
@@ -247,6 +266,7 @@ public class RoomService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "chatRooms", key = "'userRooms:' + #userId")
     public List<RoomEntity> getUserRooms(Long userId) {
         List<RoomMemberEntity> memberships = roomMemberRepository.findByUserIdAndIsActiveTrue(userId);
         return memberships.stream()
@@ -256,6 +276,7 @@ public class RoomService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "chatRooms", key = "'members:' + #roomId")
     public List<RoomMemberEntity> getRoomMembers(Long roomId, Long userId) {
         roomMemberRepository.findByRoomIdAndUserIdAndIsActiveTrue(roomId, userId)
             .orElseThrow(() -> new RuntimeException("Not a member of this room"));
