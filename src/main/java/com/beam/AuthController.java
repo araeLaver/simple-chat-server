@@ -1,5 +1,11 @@
 package com.beam;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -8,14 +14,28 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Authentication Controller
+ *
+ * <p>Handles user authentication, registration, and phone verification.
+ *
+ * @since 1.0.0
+ */
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
+@Tag(name = "Authentication", description = "사용자 인증 및 회원가입 API")
 public class AuthController {
 
     @Autowired
     private AuthService authService;
 
+    @Operation(summary = "회원가입", description = "새로운 사용자 계정을 생성합니다")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "회원가입 성공",
+                content = @Content(schema = @Schema(implementation = AuthResponse.class))),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 (중복 사용자명 등)")
+    })
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody AuthRequest request) {
         try {
@@ -28,6 +48,12 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "로그인", description = "사용자 인증 후 JWT 토큰을 발급합니다")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "로그인 성공",
+                content = @Content(schema = @Schema(implementation = AuthResponse.class))),
+        @ApiResponse(responseCode = "400", description = "잘못된 사용자명 또는 비밀번호")
+    })
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthRequest request) {
         try {
@@ -40,6 +66,11 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "로그아웃", description = "사용자 로그아웃 처리")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 토큰")
+    })
     @PostMapping("/logout")
     public ResponseEntity<?> logout(@RequestHeader("Authorization") String token) {
         try {
@@ -54,6 +85,11 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "인증 코드 전송", description = "전화번호로 인증 코드를 전송합니다")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "인증 코드 전송 성공"),
+        @ApiResponse(responseCode = "400", description = "전화번호를 찾을 수 없음")
+    })
     @PostMapping("/verify/send")
     public ResponseEntity<?> sendVerificationCode(@RequestBody Map<String, String> request) {
         try {
@@ -69,6 +105,11 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "전화번호 인증", description = "인증 코드로 전화번호를 확인합니다")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "전화번호 인증 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못되거나 만료된 인증 코드")
+    })
     @PostMapping("/verify/confirm")
     public ResponseEntity<?> verifyPhoneNumber(@RequestBody Map<String, String> request) {
         try {

@@ -1,37 +1,43 @@
-<<<<<<< HEAD:src/main/java/com/beam/FriendController.java
 package com.beam;
-=======
-package com.chat;
->>>>>>> 9106cb986b257fdd9ab7197fea5c599fbc536571:src/main/java/com/chat/FriendController.java
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-<<<<<<< HEAD:src/main/java/com/beam/FriendController.java
 import java.util.*;
 import java.util.stream.Collectors;
-=======
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
->>>>>>> 9106cb986b257fdd9ab7197fea5c599fbc536571:src/main/java/com/chat/FriendController.java
 
+/**
+ * Friend Controller
+ *
+ * <p>Manages friend relationships including requests, acceptance, and blocking.
+ *
+ * @since 1.0.0
+ */
 @RestController
 @RequestMapping("/api/friends")
 @CrossOrigin(origins = "*")
+@Tag(name = "Friends", description = "친구 관리 API")
 public class FriendController {
 
     @Autowired
     private FriendService friendService;
 
-<<<<<<< HEAD:src/main/java/com/beam/FriendController.java
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Operation(summary = "친구 요청 보내기", description = "다른 사용자에게 친구 요청을 보냅니다")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "친구 요청 전송 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청 또는 이미 친구 관계 존재")
+    })
     @PostMapping("/request")
     public ResponseEntity<?> sendFriendRequest(
             @RequestHeader("Authorization") String token,
@@ -40,23 +46,11 @@ public class FriendController {
             String jwtToken = token.replace("Bearer ", "");
             Long userId = jwtUtil.getUserIdFromToken(jwtToken);
             Long friendId = Long.valueOf(request.get("friendId").toString());
-=======
-    /**
-     * 친구 요청 보내기
-     * POST /api/friends/request
-     */
-    @PostMapping("/request")
-    public ResponseEntity<?> sendFriendRequest(@RequestBody Map<String, Long> request) {
-        try {
-            Long userId = request.get("userId");
-            Long friendId = request.get("friendId");
->>>>>>> 9106cb986b257fdd9ab7197fea5c599fbc536571:src/main/java/com/chat/FriendController.java
 
             FriendEntity friendRequest = friendService.sendFriendRequest(userId, friendId);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-<<<<<<< HEAD:src/main/java/com/beam/FriendController.java
             response.put("message", "Friend request sent");
             response.put("requestId", friendRequest.getId());
             response.put("status", friendRequest.getStatus().toString());
@@ -69,6 +63,11 @@ public class FriendController {
         }
     }
 
+    @Operation(summary = "친구 요청 수락", description = "받은 친구 요청을 수락합니다")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "친구 요청 수락 성공"),
+        @ApiResponse(responseCode = "400", description = "요청을 찾을 수 없거나 유효하지 않음")
+    })
     @PostMapping("/accept")
     public ResponseEntity<?> acceptFriendRequest(
             @RequestHeader("Authorization") String token,
@@ -77,34 +76,11 @@ public class FriendController {
             String jwtToken = token.replace("Bearer ", "");
             Long userId = jwtUtil.getUserIdFromToken(jwtToken);
             Long requesterId = Long.valueOf(request.get("requesterId").toString());
-=======
-            response.put("message", "친구 요청을 보냈습니다.");
-            response.put("data", friendRequest);
-
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "서버 오류가 발생했습니다."));
-        }
-    }
-
-    /**
-     * 친구 요청 수락
-     * POST /api/friends/accept
-     */
-    @PostMapping("/accept")
-    public ResponseEntity<?> acceptFriendRequest(@RequestBody Map<String, Long> request) {
-        try {
-            Long userId = request.get("userId");
-            Long requesterId = request.get("requesterId");
->>>>>>> 9106cb986b257fdd9ab7197fea5c599fbc536571:src/main/java/com/chat/FriendController.java
 
             FriendEntity friendship = friendService.acceptFriendRequest(userId, requesterId);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-<<<<<<< HEAD:src/main/java/com/beam/FriendController.java
             response.put("message", "Friend request accepted");
             response.put("friendshipId", friendship.getId());
             response.put("status", friendship.getStatus().toString());
@@ -117,6 +93,7 @@ public class FriendController {
         }
     }
 
+    @Operation(summary = "친구 요청 거절", description = "받은 친구 요청을 거절합니다")
     @PostMapping("/reject")
     public ResponseEntity<?> rejectFriendRequest(
             @RequestHeader("Authorization") String token,
@@ -140,6 +117,7 @@ public class FriendController {
         }
     }
 
+    @Operation(summary = "사용자 차단", description = "특정 사용자를 차단합니다")
     @PostMapping("/block")
     public ResponseEntity<?> blockUser(
             @RequestHeader("Authorization") String token,
@@ -163,6 +141,7 @@ public class FriendController {
         }
     }
 
+    @Operation(summary = "친구 삭제", description = "친구 관계를 삭제합니다")
     @DeleteMapping("/unfriend/{friendId}")
     public ResponseEntity<?> unfriend(
             @RequestHeader("Authorization") String token,
@@ -185,6 +164,7 @@ public class FriendController {
         }
     }
 
+    @Operation(summary = "친구 목록 조회", description = "내 친구 목록을 조회합니다")
     @GetMapping("/list")
     public ResponseEntity<?> getFriendList(@RequestHeader("Authorization") String token) {
         try {
@@ -220,6 +200,7 @@ public class FriendController {
         }
     }
 
+    @Operation(summary = "받은 친구 요청 조회", description = "내가 받은 친구 요청 목록을 조회합니다")
     @GetMapping("/requests/received")
     public ResponseEntity<?> getPendingRequestsReceived(@RequestHeader("Authorization") String token) {
         try {
@@ -250,6 +231,7 @@ public class FriendController {
         }
     }
 
+    @Operation(summary = "보낸 친구 요청 조회", description = "내가 보낸 친구 요청 목록을 조회합니다")
     @GetMapping("/requests/sent")
     public ResponseEntity<?> getPendingRequestsSent(@RequestHeader("Authorization") String token) {
         try {
@@ -280,6 +262,7 @@ public class FriendController {
         }
     }
 
+    @Operation(summary = "친구 요청 개수 조회", description = "받은 친구 요청의 개수를 조회합니다")
     @GetMapping("/requests/count")
     public ResponseEntity<?> getPendingRequestCount(@RequestHeader("Authorization") String token) {
         try {
@@ -299,6 +282,7 @@ public class FriendController {
         }
     }
 
+    @Operation(summary = "사용자 검색", description = "사용자명 또는 전화번호로 사용자를 검색합니다")
     @GetMapping("/search")
     public ResponseEntity<?> searchUsers(
             @RequestHeader("Authorization") String token,
@@ -330,115 +314,3 @@ public class FriendController {
         }
     }
 }
-=======
-            response.put("message", "친구 요청을 수락했습니다.");
-            response.put("data", friendship);
-
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("success", false, "message", e.getMessage()));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "서버 오류가 발생했습니다."));
-        }
-    }
-
-    /**
-     * 친구 삭제
-     * DELETE /api/friends/{friendId}
-     */
-    @DeleteMapping("/{friendId}")
-    public ResponseEntity<?> removeFriend(@RequestParam Long userId, @PathVariable Long friendId) {
-        try {
-            friendService.removeFriend(userId, friendId);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "친구를 삭제했습니다.");
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "서버 오류가 발생했습니다."));
-        }
-    }
-
-    /**
-     * 친구 차단
-     * POST /api/friends/block
-     */
-    @PostMapping("/block")
-    public ResponseEntity<?> blockFriend(@RequestBody Map<String, Long> request) {
-        try {
-            Long userId = request.get("userId");
-            Long friendId = request.get("friendId");
-
-            FriendEntity blocked = friendService.blockFriend(userId, friendId);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "친구를 차단했습니다.");
-            response.put("data", blocked);
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "서버 오류가 발생했습니다."));
-        }
-    }
-
-    /**
-     * 내 친구 목록 조회
-     * GET /api/friends?userId={userId}
-     */
-    @GetMapping
-    public ResponseEntity<?> getFriendList(@RequestParam Long userId) {
-        try {
-            List<UserEntity> friends = friendService.getFriendList(userId);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", friends);
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "서버 오류가 발생했습니다."));
-        }
-    }
-
-    /**
-     * 받은 친구 요청 목록
-     * GET /api/friends/requests/received?userId={userId}
-     */
-    @GetMapping("/requests/received")
-    public ResponseEntity<?> getReceivedRequests(@RequestParam Long userId) {
-        try {
-            List<UserEntity> requests = friendService.getPendingFriendRequests(userId);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", requests);
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "서버 오류가 발생했습니다."));
-        }
-    }
-
-    /**
-     * 보낸 친구 요청 목록
-     * GET /api/friends/requests/sent?userId={userId}
-     */
-    @GetMapping("/requests/sent")
-    public ResponseEntity<?> getSentRequests(@RequestParam Long userId) {
-        try {
-            List<UserEntity> requests = friendService.getSentFriendRequests(userId);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("data", requests);
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(Map.of("success", false, "message", "서버 오류가 발생했습니다."));
-        }
-    }
-}
->>>>>>> 9106cb986b257fdd9ab7197fea5c599fbc536571:src/main/java/com/chat/FriendController.java
