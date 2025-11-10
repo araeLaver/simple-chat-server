@@ -35,6 +35,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private RateLimitService rateLimitService;
+
     public ChatWebSocketHandler() {
         // 기본 그룹 채팅방들
         chatRooms.put("general", new ChatRoom("general", "일반 채팅방", RoomType.GROUP));
@@ -97,9 +100,21 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         try {
+            // WebSocket Rate Limiting
+            if (!rateLimitService.isWebSocketMessageAllowed(session.getId())) {
+                // Send rate limit error message
+                ChatMessage errorMessage = new ChatMessage();
+                errorMessage.setType("error");
+                errorMessage.setContent("Rate limit exceeded. Please slow down.");
+                errorMessage.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
+                session.sendMessage(new TextMessage(objectMapper.writeValueAsString(errorMessage)));
+                System.err.println("Rate limit exceeded for session: " + session.getId());
+                return;
+            }
+
             ChatMessage chatMessage = objectMapper.readValue(message.getPayload(), ChatMessage.class);
             chatMessage.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
-            
+
             if ("joinRoom".equals(chatMessage.getType())) {
                 String roomId = chatMessage.getRoomId();
                 if (roomId == null) roomId = "general";
@@ -292,7 +307,10 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         sessions.remove(session);
         leaveCurrentRoom(session);
         users.remove(session.getId());
-        
+
+        // Clean up rate limiter for this session
+        rateLimitService.removeWebSocketLimiter(session.getId());
+
         System.out.println("연결 종료: " + session.getId());
     }
     
