@@ -32,6 +32,9 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     @Autowired
     private FriendService friendService;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     public ChatWebSocketHandler() {
         // 기본 그룹 채팅방들
         chatRooms.put("general", new ChatRoom("general", "일반 채팅방", RoomType.GROUP));
@@ -41,9 +44,54 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        // WebSocket 인증: Query parameter에서 토큰 추출 및 검증
+        String token = extractTokenFromSession(session);
+
+        // 게스트 모드 지원: 토큰이 없거나 "guest"인 경우 허용
+        if (token != null && !"guest".equals(token)) {
+            if (!jwtUtil.validateToken(token)) {
+                System.err.println("Invalid JWT token for session: " + session.getId());
+                session.close(CloseStatus.POLICY_VIOLATION.withReason("Invalid or expired token"));
+                return;
+            }
+            // 유효한 토큰이면 사용자 정보를 세션에 저장
+            String username = jwtUtil.getUsernameFromToken(token);
+            session.getAttributes().put("username", username);
+            session.getAttributes().put("userId", jwtUtil.getUserIdFromToken(token));
+            System.out.println("Authenticated user connected: " + username);
+        } else {
+            // 게스트 모드
+            System.out.println("Guest user connected: " + session.getId());
+        }
+
         sessions.add(session);
         sendRoomList(session);
         System.out.println("새로운 연결: " + session.getId());
+    }
+
+    /**
+     * WebSocket 세션에서 JWT 토큰 추출
+     * Query parameter 'token' 또는 Sec-WebSocket-Protocol 헤더에서 추출
+     */
+    private String extractTokenFromSession(WebSocketSession session) {
+        // 1. Query parameter에서 추출 시도
+        String query = session.getUri().getQuery();
+        if (query != null && query.contains("token=")) {
+            String[] params = query.split("&");
+            for (String param : params) {
+                if (param.startsWith("token=")) {
+                    return param.substring(6); // "token=" 제거
+                }
+            }
+        }
+
+        // 2. Handshake headers에서 추출 시도
+        List<String> protocols = session.getHandshakeHeaders().get("Sec-WebSocket-Protocol");
+        if (protocols != null && !protocols.isEmpty()) {
+            return protocols.get(0);
+        }
+
+        return null;
     }
 
     @Override
