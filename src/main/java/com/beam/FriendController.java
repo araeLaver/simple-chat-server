@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/api/friends")
-@CrossOrigin(origins = "*")
 @Tag(name = "Friends", description = "친구 관리 API")
 public class FriendController {
 

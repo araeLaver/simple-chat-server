@@ -23,7 +23,6 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
 @Tag(name = "Authentication", description = "사용자 인증 및 회원가입 API")
 public class AuthController {
 

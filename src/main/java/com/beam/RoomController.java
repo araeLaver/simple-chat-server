@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
  */
 @RestController
 @RequestMapping("/api/rooms")
-@CrossOrigin(origins = "*")
 @Tag(name = "Rooms", description = "그룹 채팅방 관리 API")
 public class RoomController {
 

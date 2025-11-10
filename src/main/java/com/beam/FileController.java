@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/files")
-@CrossOrigin(origins = "*")
 public class FileController {
 
     @Autowired

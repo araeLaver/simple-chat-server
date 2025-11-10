@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/dm")
-@CrossOrigin(origins = "*")
 public class DirectMessageController {
 
     @Autowired
