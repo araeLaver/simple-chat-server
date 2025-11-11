@@ -1,7 +1,12 @@
 # 멀티스테이지 빌드: Maven 빌드 스테이지
-FROM maven:3.9.6-openjdk-17-slim AS build
+FROM eclipse-temurin:17-jdk-jammy AS build
 
 WORKDIR /app
+
+# Maven 설치
+RUN apt-get update && \
+    apt-get install -y maven && \
+    rm -rf /var/lib/apt/lists/*
 
 # Maven 메모리 최적화 (Koyeb 무료 플랜 대응)
 ENV MAVEN_OPTS="-Xmx512m -Xms256m"
@@ -9,11 +14,11 @@ ENV MAVEN_OPTS="-Xmx512m -Xms256m"
 COPY pom.xml .
 COPY src ./src
 
-# Maven 빌드 (테스트 제외, 병렬 빌드 비활성화로 메모리 절약)
-RUN mvn clean package -DskipTests -T 1C
+# Maven 빌드 (테스트 제외)
+RUN mvn clean package -DskipTests
 
 # 런타임 스테이지
-FROM openjdk:17-jre-slim
+FROM eclipse-temurin:17-jre-jammy
 
 # 애플리케이션 사용자 생성 (보안)
 RUN addgroup --system chatapp && adduser --system --group chatapp
