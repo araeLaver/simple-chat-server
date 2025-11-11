@@ -74,18 +74,26 @@ BEAM은 프라이버시와 속도를 최우선으로 하는 메신저입니다.
 
 ```bash
 # 저장소 클론
-git clone https://github.com/your-org/beam-server.git
-cd beam-server
+git clone https://github.com/araeLaver/simple-chat-server.git
+cd simple-chat-server
+
+# 환경변수 설정
+cp .env.example .env
+# .env 파일을 열어서 DB 자격증명 입력
+nano .env
 
 # Maven 빌드
 mvn clean install
 
-# 로컬 실행 (H2 인메모리 DB)
+# 개발 모드 실행
+export $(cat .env | xargs)  # Linux/Mac
 mvn spring-boot:run
 
 # 브라우저에서 접속
 open http://localhost:8080
 ```
+
+**⚠️ 중요**: `.env` 파일은 Git에 커밋하지 마세요! (`.gitignore`에 이미 포함됨)
 
 ### Docker 실행
 
@@ -95,21 +103,39 @@ docker build -t beam-server .
 
 # 컨테이너 실행
 docker run -p 8080:8080 \
-  -e SPRING_PROFILES_ACTIVE=local \
+  -e DATABASE_URL="jdbc:postgresql://your-host/db" \
+  -e DATABASE_USERNAME="username" \
+  -e DATABASE_PASSWORD="password" \
+  -e JWT_SECRET="your-secret-key" \
+  -e CORS_ALLOWED_ORIGINS="http://localhost:8080" \
+  -e SPRING_PROFILES_ACTIVE=dev \
   beam-server
 ```
+
+**💡 Tip**: `.env` 파일 사용 시: `docker run --env-file .env -p 8080:8080 beam-server`
 
 ## 📦 배포
 
 ### 프로덕션 환경 변수
 
+**필수 환경 변수**:
+
 ```bash
-DATABASE_URL=jdbc:postgresql://host/db?sslmode=require
+# 데이터베이스
+DATABASE_URL=jdbc:postgresql://host/db?currentSchema=chatapp_prod&sslmode=require
 DATABASE_USERNAME=your_username
-DATABASE_PASSWORD=your_password
+DATABASE_PASSWORD=your_secure_password
+
+# 보안
+JWT_SECRET=your-256-bit-secret-key  # Generate: openssl rand -base64 64
+CORS_ALLOWED_ORIGINS=https://beam.chat,https://www.beam.chat
+
+# 서버
 SPRING_PROFILES_ACTIVE=prod
-CORS_ALLOWED_ORIGINS=https://beam.chat
+PORT=8080
 ```
+
+**보안 가이드**: [SECURITY.md](SECURITY.md) 참고
 
 ### Koyeb 배포
 
