@@ -1,9 +1,11 @@
 package com.beam;
 
+import com.beam.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,26 +42,19 @@ public class FriendController {
     @PostMapping("/request")
     public ResponseEntity<?> sendFriendRequest(
             @RequestHeader("Authorization") String token,
-            @RequestBody Map<String, Object> request) {
-        try {
-            String jwtToken = token.replace("Bearer ", "");
-            Long userId = jwtUtil.getUserIdFromToken(jwtToken);
-            Long friendId = Long.valueOf(request.get("friendId").toString());
+            @Valid @RequestBody FriendRequestDto request) {
+        String jwtToken = token.replace("Bearer ", "");
+        Long userId = jwtUtil.getUserIdFromToken(jwtToken);
 
-            FriendEntity friendRequest = friendService.sendFriendRequest(userId, friendId);
+        FriendEntity friendRequest = friendService.sendFriendRequest(userId, request.getFriendId());
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Friend request sent");
-            response.put("requestId", friendRequest.getId());
-            response.put("status", friendRequest.getStatus().toString());
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Friend request sent");
+        response.put("requestId", friendRequest.getId());
+        response.put("status", friendRequest.getStatus().toString());
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "친구 요청 수락", description = "받은 친구 요청을 수락합니다")
@@ -70,74 +65,53 @@ public class FriendController {
     @PostMapping("/accept")
     public ResponseEntity<?> acceptFriendRequest(
             @RequestHeader("Authorization") String token,
-            @RequestBody Map<String, Object> request) {
-        try {
-            String jwtToken = token.replace("Bearer ", "");
-            Long userId = jwtUtil.getUserIdFromToken(jwtToken);
-            Long requesterId = Long.valueOf(request.get("requesterId").toString());
+            @Valid @RequestBody AcceptFriendRequestDto request) {
+        String jwtToken = token.replace("Bearer ", "");
+        Long userId = jwtUtil.getUserIdFromToken(jwtToken);
 
-            FriendEntity friendship = friendService.acceptFriendRequest(userId, requesterId);
+        FriendEntity friendship = friendService.acceptFriendRequest(userId, request.getRequesterId());
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Friend request accepted");
-            response.put("friendshipId", friendship.getId());
-            response.put("status", friendship.getStatus().toString());
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Friend request accepted");
+        response.put("friendshipId", friendship.getId());
+        response.put("status", friendship.getStatus().toString());
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "친구 요청 거절", description = "받은 친구 요청을 거절합니다")
     @PostMapping("/reject")
     public ResponseEntity<?> rejectFriendRequest(
             @RequestHeader("Authorization") String token,
-            @RequestBody Map<String, Object> request) {
-        try {
-            String jwtToken = token.replace("Bearer ", "");
-            Long userId = jwtUtil.getUserIdFromToken(jwtToken);
-            Long requesterId = Long.valueOf(request.get("requesterId").toString());
+            @Valid @RequestBody AcceptFriendRequestDto request) {
+        String jwtToken = token.replace("Bearer ", "");
+        Long userId = jwtUtil.getUserIdFromToken(jwtToken);
 
-            friendService.rejectFriendRequest(userId, requesterId);
+        friendService.rejectFriendRequest(userId, request.getRequesterId());
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Friend request rejected");
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Friend request rejected");
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "사용자 차단", description = "특정 사용자를 차단합니다")
     @PostMapping("/block")
     public ResponseEntity<?> blockUser(
             @RequestHeader("Authorization") String token,
-            @RequestBody Map<String, Object> request) {
-        try {
-            String jwtToken = token.replace("Bearer ", "");
-            Long userId = jwtUtil.getUserIdFromToken(jwtToken);
-            Long blockUserId = Long.valueOf(request.get("userId").toString());
+            @Valid @RequestBody BlockUserRequestDto request) {
+        String jwtToken = token.replace("Bearer ", "");
+        Long userId = jwtUtil.getUserIdFromToken(jwtToken);
 
-            friendService.blockUser(userId, blockUserId);
+        friendService.blockUser(userId, request.getUserId());
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "User blocked");
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "User blocked");
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "친구 삭제", description = "친구 관계를 삭제합니다")

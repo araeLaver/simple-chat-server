@@ -1,10 +1,12 @@
 package com.beam;
 
+import com.beam.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,71 +46,30 @@ public class RoomController {
     @PostMapping
     public ResponseEntity<?> createRoom(
             @RequestHeader("Authorization") String token,
-            @RequestBody Map<String, Object> request) {
-        try {
-            String jwtToken = token.replace("Bearer ", "");
-            Long userId = jwtUtil.getUserIdFromToken(jwtToken);
+            @Valid @RequestBody CreateRoomRequest request) {
+        String jwtToken = token.replace("Bearer ", "");
+        Long userId = jwtUtil.getUserIdFromToken(jwtToken);
 
-            String roomName = request.get("roomName").toString();
-            String description = request.getOrDefault("description", "").toString();
-            String roomTypeStr = request.getOrDefault("roomType", "PUBLIC").toString();
-            Integer maxMembers = request.containsKey("maxMembers")
-                ? Integer.valueOf(request.get("maxMembers").toString())
-                : 100;
+        RoomEntity.RoomType roomType = RoomEntity.RoomType.valueOf(request.getRoomType());
 
-            RoomEntity.RoomType roomType = RoomEntity.RoomType.valueOf(roomTypeStr);
+        RoomEntity room = roomService.createRoom(
+            userId,
+            request.getRoomName(),
+            request.getDescription(),
+            roomType,
+            request.getMaxMembers()
+        );
 
-            RoomEntity room = roomService.createRoom(userId, roomName, description, roomType, maxMembers);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("roomId", room.getId());
+        response.put("roomName", room.getRoomName());
+        response.put("roomType", room.getRoomType().toString());
+        response.put("message", "방이 생성되었습니다");
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("roomId", room.getId());
-            response.put("roomName", room.getRoomName());
-            response.put("roomType", room.getRoomType().toString());
-            response.put("message", "방이 생성되었습니다");
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
+        return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "채팅방 생성 (대체 엔드포인트)", description = "새로운 그룹 채팅방을 생성합니다")
-    @PostMapping("/create")
-    public ResponseEntity<?> createNewRoom(
-            @RequestHeader("Authorization") String token,
-            @RequestBody Map<String, Object> request) {
-        try {
-            String jwtToken = token.replace("Bearer ", "");
-            Long userId = jwtUtil.getUserIdFromToken(jwtToken);
-
-            String roomName = request.get("roomName").toString();
-            String description = request.getOrDefault("description", "").toString();
-            String roomTypeStr = request.getOrDefault("roomType", "PUBLIC").toString();
-            Integer maxMembers = request.containsKey("maxMembers")
-                ? Integer.valueOf(request.get("maxMembers").toString())
-                : 100;
-
-            RoomEntity.RoomType roomType = RoomEntity.RoomType.valueOf(roomTypeStr);
-
-            RoomEntity room = roomService.createRoom(userId, roomName, description, roomType, maxMembers);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("roomId", room.getId());
-            response.put("roomName", room.getRoomName());
-            response.put("roomType", room.getRoomType().toString());
-            response.put("message", "Room created successfully");
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
-    }
 
     @Operation(summary = "채팅방 정보 수정", description = "채팅방의 이름, 설명, 최대 인원을 수정합니다")
     @ApiResponses(value = {
@@ -119,31 +80,25 @@ public class RoomController {
     public ResponseEntity<?> updateRoom(
             @RequestHeader("Authorization") String token,
             @Parameter(description = "채팅방 ID") @PathVariable Long roomId,
-            @RequestBody Map<String, Object> request) {
-        try {
-            String jwtToken = token.replace("Bearer ", "");
-            Long userId = jwtUtil.getUserIdFromToken(jwtToken);
+            @Valid @RequestBody UpdateRoomRequest request) {
+        String jwtToken = token.replace("Bearer ", "");
+        Long userId = jwtUtil.getUserIdFromToken(jwtToken);
 
-            String roomName = request.containsKey("roomName") ? request.get("roomName").toString() : null;
-            String description = request.containsKey("description") ? request.get("description").toString() : null;
-            Integer maxMembers = request.containsKey("maxMembers")
-                ? Integer.valueOf(request.get("maxMembers").toString())
-                : null;
+        RoomEntity room = roomService.updateRoom(
+            roomId,
+            userId,
+            request.getRoomName(),
+            request.getDescription(),
+            request.getMaxMembers()
+        );
 
-            RoomEntity room = roomService.updateRoom(roomId, userId, roomName, description, maxMembers);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("roomId", room.getId());
+        response.put("roomName", room.getRoomName());
+        response.put("message", "Room updated successfully");
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("roomId", room.getId());
-            response.put("roomName", room.getRoomName());
-            response.put("message", "Room updated successfully");
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "채팅방 삭제", description = "채팅방을 삭제합니다 (방장만 가능)")
@@ -174,24 +129,17 @@ public class RoomController {
     public ResponseEntity<?> addMember(
             @RequestHeader("Authorization") String token,
             @Parameter(description = "채팅방 ID") @PathVariable Long roomId,
-            @RequestBody Map<String, Object> request) {
-        try {
-            String jwtToken = token.replace("Bearer ", "");
-            Long inviterId = jwtUtil.getUserIdFromToken(jwtToken);
-            Long userId = Long.valueOf(request.get("userId").toString());
+            @Valid @RequestBody AddMemberRequest request) {
+        String jwtToken = token.replace("Bearer ", "");
+        Long inviterId = jwtUtil.getUserIdFromToken(jwtToken);
 
-            roomService.addMember(roomId, userId, inviterId);
+        roomService.addMember(roomId, request.getUserId(), inviterId);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Member added successfully");
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Member added successfully");
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "멤버 제거", description = "채팅방에서 멤버를 강제 퇴장시킵니다 (관리자/방장만 가능)")
@@ -246,29 +194,21 @@ public class RoomController {
     public ResponseEntity<?> sendMessage(
             @RequestHeader("Authorization") String token,
             @Parameter(description = "채팅방 ID") @PathVariable Long roomId,
-            @RequestBody Map<String, Object> request) {
-        try {
-            String jwtToken = token.replace("Bearer ", "");
-            Long userId = jwtUtil.getUserIdFromToken(jwtToken);
+            @Valid @RequestBody SendMessageRequest request) {
+        String jwtToken = token.replace("Bearer ", "");
+        Long userId = jwtUtil.getUserIdFromToken(jwtToken);
 
-            String content = request.get("content").toString();
-            String messageTypeStr = request.getOrDefault("messageType", "TEXT").toString();
-            GroupMessageEntity.MessageType messageType = GroupMessageEntity.MessageType.valueOf(messageTypeStr);
+        GroupMessageEntity.MessageType messageType = GroupMessageEntity.MessageType.valueOf(request.getMessageType());
 
-            GroupMessageEntity message = roomService.sendMessage(roomId, userId, content, messageType);
+        GroupMessageEntity message = roomService.sendMessage(roomId, userId, request.getContent(), messageType);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("messageId", message.getId());
-            response.put("content", message.getContent());
-            response.put("timestamp", message.getTimestamp().toString());
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("messageId", message.getId());
+        response.put("content", message.getContent());
+        response.put("timestamp", message.getTimestamp().toString());
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "메시지 조회", description = "채팅방의 최근 메시지 100개를 조회합니다")
