@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#10B981">
+    <title>⚡ BEAM - 빠른 메시징</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            font-size: 20px;
+            opacity: 0.95;
+            margin-bottom: 48px;
+            font-weight: 300;
+        }
+
+        .main-button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 20px 48px;
+            font-size: 22px;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 360px;
+        }
+
+        .main-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+        }
+
+        .main-button:active {
+            transform: translateY(0);
+        }
+
+        .secondary-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.5);
+            padding: 14px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .secondary-button:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.8);
+        }
+
+        .features {
+            margin-top: 60px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 24px;
+            opacity: 0.9;
+        }
+
+        .feature {
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .feature:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+
+        .feature-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: rgba(255,77,79,0.9);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 20px;
+            display: none;
+            animation: shake 0.5s ease;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 36px; }
+            .subtitle { font-size: 18px; }
+            .main-button { font-size: 20px; padding: 18px 40px; }
+            .logo { font-size: 60px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">⚡</div>
+        <h1>BEAM</h1>
+        <p class="subtitle">빠르고 간단한 메시징</p>
+
+        <button class="main-button" id="startButton" onclick="quickStart()">
+            ⚡ 바로 시작하기
+        </button>
+
+        <div>
+            <button class="secondary-button" onclick="showLogin()">
+                회원 로그인
+            </button>
+            <button class="secondary-button" onclick="showRegister()">
+                회원가입
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 16px;">접속 중...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">🚀</div>
+                <div class="feature-text">즉시 시작</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🔒</div>
+                <div class="feature-text">안전한 채팅</div>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">💬</div>
+                <div class="feature-text">실시간 메시지</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        async function quickStart() {
+            const button = document.getElementById('startButton');
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+
+            // UI 상태 변경
+            button.disabled = true;
+            button.style.opacity = '0.6';
+            loading.classList.add('active');
+            error.classList.remove('active');
+
+            try {
+                // 게스트 로그인 API 호출
+                const response = await fetch(`${API_URL}/api/auth/guest`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('로그인 실패');
+                }
+
+                const data = await response.json();
+
+                // 토큰과 사용자 정보 저장
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                localStorage.setItem('username', data.user.username);
+                localStorage.setItem('displayName', data.user.displayName);
+
+                // 채팅 화면으로 이동
+                window.location.href = '/chat.html';
+
+            } catch (err) {
+                console.error('Quick start error:', err);
+                error.textContent = '⚠️ 연결 실패. 다시 시도해주세요.';
+                error.classList.add('active');
+                button.disabled = false;
+                button.style.opacity = '1';
+                loading.classList.remove('active');
+            }
+        }
+
+        function showLogin() {
+            alert('회원 로그인 기능은 준비 중입니다.\n지금은 "바로 시작하기"를 이용해주세요! ⚡');
+        }
+
+        function showRegister() {
+            alert('회원가입 기능은 준비 중입니다.\n지금은 "바로 시작하기"를 이용해주세요! ⚡');
+        }
+
+        // Enter 키로도 시작 가능
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                quickStart();
+            }
+        });
+    </script>
+</body>
+</html>
