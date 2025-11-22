@@ -718,13 +718,13 @@ body {
 }
 
 .loading {
-    display: none;
+    display: none !important;
     text-align: center;
     padding: 2rem;
 }
 
 .loading.active {
-    display: block;
+    display: block !important;
 }
 
 .spinner {

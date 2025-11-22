@@ -89,7 +89,6 @@ body {
 
 .sidebar-search {
     position: relative;
-    z-index: 1;
 }
 
 .sidebar-search input {
@@ -122,6 +121,8 @@ body {
     gap: 0.5rem;
     padding: 1rem;
     border-bottom: 1px solid var(--border-color);
+    position: relative;
+    z-index: 2;
 }
 
 .tab-btn {
