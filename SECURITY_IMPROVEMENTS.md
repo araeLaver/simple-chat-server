@@ -379,5 +379,4 @@ grep "Security Violation" logs/beam-security.log
 
 ---
 
-**작성자**: Claude (AI Assistant)
 **검토 필요**: 보안 감사 권장
