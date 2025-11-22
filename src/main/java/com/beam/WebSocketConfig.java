@@ -54,8 +54,13 @@ public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        // Register handler for both native WebSocket and SockJS
+        registry.addHandler(chatWebSocketHandler, "/ws")
+                .setAllowedOrigins(allowedOrigins.split(","));
+
+        // Keep /chat endpoint with SockJS for backward compatibility
         registry.addHandler(chatWebSocketHandler, "/chat")
                 .setAllowedOrigins(allowedOrigins.split(","))
-                .withSockJS(); // Fallback for browsers without native WebSocket support
+                .withSockJS();
     }
 }

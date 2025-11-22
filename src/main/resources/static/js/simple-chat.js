@@ -20,13 +20,15 @@ function connect() {
         console.log('WebSocket Connected');
         updateStatus(true);
 
-        // Join general room
-        const joinMsg = {
-            type: 'joinRoom',
-            roomId: 'general',
-            sender: username
-        };
-        ws.send(JSON.stringify(joinMsg));
+        // Wait for server to send roomlist, then join
+        setTimeout(() => {
+            const joinMsg = {
+                type: 'joinRoom',
+                roomId: 'general',
+                sender: username
+            };
+            ws.send(JSON.stringify(joinMsg));
+        }, 500);
     };
 
     ws.onmessage = (event) => {
