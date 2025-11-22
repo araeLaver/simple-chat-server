@@ -72,6 +72,8 @@ body {
     padding: 1.2rem;
     border-bottom: 1px solid var(--border-color);
     background: var(--bg-secondary);
+    position: relative;
+    z-index: 1;
 }
 
 .sidebar-logo {
@@ -89,7 +91,7 @@ body {
 
 .sidebar-search {
     position: relative;
-    z-index: 1;
+    z-index: 0;
 }
 
 .sidebar-search input {
@@ -123,7 +125,8 @@ body {
     padding: 1rem;
     border-bottom: 1px solid var(--border-color);
     position: relative;
-    z-index: 2;
+    z-index: 100;
+    background: var(--bg-sidebar);
 }
 
 .tab-btn {
