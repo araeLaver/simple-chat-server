@@ -52,7 +52,10 @@ public class SecurityConfig {
                     "/actuator/prometheus",
                     "/swagger-ui/**",
                     "/v3/api-docs/**",
-                    "/ws/**",  // WebSocket 연결 (내부에서 토큰 검증)
+                    "/ws",          // WebSocket 엔드포인트
+                    "/ws/**",       // WebSocket SockJS fallback
+                    "/chat",        // WebSocket 엔드포인트
+                    "/chat/**",     // WebSocket SockJS fallback
                     "/",
                     "/index.html",
                     "/chat.html",
