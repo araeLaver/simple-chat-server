@@ -7,7 +7,7 @@ const API_URL = window.location.origin;
 class ChatApp {
     constructor() {
         this.ws = null;
-        this.currentRoom = 'general';
+        this.currentRoom = localStorage.getItem('defaultRoomId') || null;
         this.token = localStorage.getItem('token');
         this.username = localStorage.getItem('username') || 'Guest';
         this.displayName = localStorage.getItem('displayName') || '게스트';

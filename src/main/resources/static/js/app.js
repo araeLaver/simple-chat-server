@@ -89,6 +89,7 @@ async function quickStart() {
         localStorage.setItem('user', JSON.stringify(data.user));
         localStorage.setItem('username', data.user.username);
         localStorage.setItem('displayName', data.user.displayName);
+        localStorage.setItem('defaultRoomId', data.defaultRoomId);
 
         // Redirect to chat
         window.location.href = '/chat.html';

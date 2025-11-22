@@ -17,6 +17,8 @@ public interface RoomRepository extends JpaRepository<RoomEntity, Long> {
 
     List<RoomEntity> findByRoomTypeAndIsActiveTrue(RoomEntity.RoomType roomType);
 
+    Optional<RoomEntity> findByRoomNameAndRoomType(String roomName, RoomEntity.RoomType roomType);
+
     @Query("SELECT r FROM RoomEntity r WHERE " +
            "r.isActive = true AND " +
            "(r.roomName LIKE %:keyword% OR r.description LIKE %:keyword%)")

@@ -38,6 +38,12 @@ public class AuthController {
     @Autowired
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private RoomService roomService;
+
+    @Autowired
+    private RoomRepository roomRepository;
+
     @Operation(summary = "회원가입", description = "새로운 사용자 계정을 생성합니다")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "회원가입 성공",
@@ -118,6 +124,26 @@ public class AuthController {
 
             userRepository.save(guestUser);
 
+            // 기본 "일반 채팅" 방 찾기 또는 생성
+            RoomEntity defaultRoom = roomRepository.findByRoomNameAndRoomType("일반 채팅", RoomEntity.RoomType.PUBLIC)
+                .orElseGet(() -> {
+                    RoomEntity newRoom = roomService.createRoom(
+                        guestUser.getId(),
+                        "일반 채팅",
+                        "누구나 참여 가능한 일반 채팅방입니다",
+                        RoomEntity.RoomType.PUBLIC,
+                        1000
+                    );
+                    return newRoom;
+                });
+
+            // 사용자를 방에 추가 (이미 있으면 무시)
+            try {
+                roomService.addMember(defaultRoom.getId(), guestUser.getId(), guestUser.getId());
+            } catch (Exception e) {
+                // 이미 멤버인 경우 무시
+            }
+
             // JWT 토큰 생성
             String token = jwtUtil.generateToken(guestUser.getUsername(), guestUser.getId());
 
@@ -130,6 +156,7 @@ public class AuthController {
                 "username", guestUser.getUsername(),
                 "displayName", guestUser.getDisplayName()
             ));
+            response.put("defaultRoomId", defaultRoom.getId());
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
