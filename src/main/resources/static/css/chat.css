@@ -89,6 +89,7 @@ body {
 
 .sidebar-search {
     position: relative;
+    z-index: 1;
 }
 
 .sidebar-search input {
