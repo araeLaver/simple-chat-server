@@ -151,6 +151,18 @@ class ChatApp {
         if (fileInput) {
             fileInput.addEventListener('change', (e) => this.handleFileUpload(e));
         }
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            let searchTimeout;
+            searchInput.addEventListener('input', (e) => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    this.handleSearch(e.target.value);
+                }, 300);
+            });
+        }
     }
 
     sendMessage() {
@@ -322,65 +334,118 @@ class ChatApp {
         }
     }
 
-    loadConversations() {
+    async loadConversations() {
         const conversationList = document.getElementById('conversationList');
         if (!conversationList) return;
 
-        // Sample data - replace with API call
-        const conversations = [
-            {
-                id: 'general',
-                name: '일반 채팅',
-                avatar: '🌍',
-                lastMessage: '환영합니다!',
-                time: '방금',
-                unread: 0,
-                online: true
-            },
-            {
-                id: 'random',
-                name: '랜덤 채팅',
-                avatar: '🎲',
-                lastMessage: '새로운 대화를 시작해보세요',
-                time: '1분 전',
-                unread: 3,
-                online: false
-            }
-        ];
+        try {
+            const response = await fetch(`${API_URL}/api/rooms/my-rooms`, {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`
+                }
+            });
 
-        conversationList.innerHTML = conversations.map(conv => `
-            <div class="conversation-item ${conv.id === this.currentRoom ? 'active' : ''}"
-                 onclick="chatApp.joinRoom('${conv.id}')">
-                <div class="conversation-avatar">
-                    ${conv.avatar}
-                    ${conv.online ? '<div class="online-indicator"></div>' : ''}
-                </div>
-                <div class="conversation-info">
-                    <div class="conversation-name">
-                        <span>${conv.name}</span>
-                        <span class="conversation-time">${conv.time}</span>
+            if (!response.ok) throw new Error('Failed to load rooms');
+
+            const rooms = await response.json();
+
+            if (rooms.length === 0) {
+                conversationList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">💬</div>
+                        <div class="empty-state-text">아직 참여한 채팅방이 없습니다</div>
                     </div>
-                    <div class="conversation-preview">${conv.lastMessage}</div>
+                `;
+                return;
+            }
+
+            conversationList.innerHTML = rooms.map(room => {
+                const timeAgo = room.lastMessageTime ? this.getTimeAgo(room.lastMessageTime) : '';
+
+                return `
+                    <div class="conversation-item ${room.roomId === this.currentRoom ? 'active' : ''}"
+                         onclick="chatApp.joinRoom('${room.roomId}')">
+                        <div class="conversation-avatar">
+                            ${this.getRoomAvatar(room.roomType)}
+                            ${room.currentMembers > 0 ? '<div class="online-indicator"></div>' : ''}
+                        </div>
+                        <div class="conversation-info">
+                            <div class="conversation-name">
+                                <span>${this.escapeHtml(room.roomName)}</span>
+                                <span class="conversation-time">${timeAgo}</span>
+                            </div>
+                            <div class="conversation-preview">${this.escapeHtml(room.lastMessage || '메시지가 없습니다')}</div>
+                        </div>
+                        ${room.unreadCount > 0 ? `<div class="unread-badge">${room.unreadCount}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+        } catch (error) {
+            console.error('Load conversations error:', error);
+            conversationList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚠️</div>
+                    <div class="empty-state-text">채팅방을 불러올 수 없습니다</div>
                 </div>
-                ${conv.unread > 0 ? `<div class="unread-badge">${conv.unread}</div>` : ''}
-            </div>
-        `).join('');
+            `;
+        }
     }
 
-    loadFriends() {
+    async loadFriends() {
         const conversationList = document.getElementById('conversationList');
         if (!conversationList) return;
 
-        conversationList.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-state-icon">👥</div>
-                <div class="empty-state-text">아직 친구가 없습니다</div>
-            </div>
-        `;
+        try {
+            const response = await fetch(`${API_URL}/api/friends/list`, {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to load friends');
+
+            const friends = await response.json();
+
+            if (friends.length === 0) {
+                conversationList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👥</div>
+                        <div class="empty-state-text">아직 친구가 없습니다</div>
+                    </div>
+                `;
+                return;
+            }
+
+            conversationList.innerHTML = friends.map(friend => `
+                <div class="conversation-item" onclick="chatApp.startDirectMessage(${friend.friendId})">
+                    <div class="conversation-avatar">
+                        ${this.getInitial(friend.displayName)}
+                        ${friend.isOnline ? '<div class="online-indicator"></div>' : ''}
+                    </div>
+                    <div class="conversation-info">
+                        <div class="conversation-name">
+                            <span>${this.escapeHtml(friend.displayName)}</span>
+                            <span class="conversation-time">${friend.isOnline ? '온라인' : '오프라인'}</span>
+                        </div>
+                        <div class="conversation-preview">@${this.escapeHtml(friend.username)}</div>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (error) {
+            console.error('Load friends error:', error);
+            conversationList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚠️</div>
+                    <div class="empty-state-text">친구 목록을 불러올 수 없습니다</div>
+                </div>
+            `;
+        }
     }
 
     loadRooms() {
-        this.loadConversations(); // For now, same as conversations
+        this.loadConversations();
     }
 
     toggleSidebar() {
@@ -456,6 +521,121 @@ class ChatApp {
             notification.style.animation = 'slideOut 0.3s ease';
             setTimeout(() => notification.remove(), 300);
         }, 3000);
+    }
+
+    getRoomAvatar(roomType) {
+        const avatars = {
+            'PUBLIC': '🌍',
+            'PRIVATE': '🔒',
+            'SECRET': '🔐'
+        };
+        return avatars[roomType] || '💬';
+    }
+
+    getTimeAgo(timestamp) {
+        const now = new Date();
+        const time = new Date(timestamp);
+        const diff = Math.floor((now - time) / 1000); // seconds
+
+        if (diff < 60) return '방금';
+        if (diff < 3600) return `${Math.floor(diff / 60)}분 전`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
+        if (diff < 604800) return `${Math.floor(diff / 86400)}일 전`;
+
+        return time.toLocaleDateString('ko-KR');
+    }
+
+    startDirectMessage(friendId) {
+        this.showNotification('1:1 채팅 기능은 준비 중입니다', 'info');
+        // TODO: Implement direct messaging
+    }
+
+    async handleSearch(query) {
+        if (!query || query.trim().length < 2) {
+            // Reload current tab data if search is cleared
+            const activeTab = document.querySelector('.tab-btn.active');
+            if (activeTab) {
+                this.switchTab(activeTab.dataset.tab);
+            }
+            return;
+        }
+
+        const conversationList = document.getElementById('conversationList');
+        if (!conversationList) return;
+
+        const activeTab = document.querySelector('.tab-btn.active');
+        const tabName = activeTab ? activeTab.dataset.tab : 'chats';
+
+        try {
+            let endpoint = '';
+            if (tabName === 'friends') {
+                endpoint = `/api/friends/search?query=${encodeURIComponent(query)}`;
+            } else {
+                endpoint = `/api/rooms/search?keyword=${encodeURIComponent(query)}`;
+            }
+
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                headers: {
+                    'Authorization': `Bearer ${this.token}`
+                }
+            });
+
+            if (!response.ok) throw new Error('Search failed');
+
+            const results = await response.json();
+
+            if (results.length === 0) {
+                conversationList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <div class="empty-state-text">검색 결과가 없습니다</div>
+                    </div>
+                `;
+                return;
+            }
+
+            if (tabName === 'friends') {
+                conversationList.innerHTML = results.map(user => `
+                    <div class="conversation-item">
+                        <div class="conversation-avatar">
+                            ${this.getInitial(user.displayName)}
+                            ${user.isOnline ? '<div class="online-indicator"></div>' : ''}
+                        </div>
+                        <div class="conversation-info">
+                            <div class="conversation-name">
+                                <span>${this.escapeHtml(user.displayName)}</span>
+                                <span class="conversation-time">${user.isOnline ? '온라인' : '오프라인'}</span>
+                            </div>
+                            <div class="conversation-preview">@${this.escapeHtml(user.username)}</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                conversationList.innerHTML = results.map(room => `
+                    <div class="conversation-item" onclick="chatApp.joinRoom('${room.roomId}')">
+                        <div class="conversation-avatar">
+                            ${this.getRoomAvatar(room.roomType)}
+                        </div>
+                        <div class="conversation-info">
+                            <div class="conversation-name">
+                                <span>${this.escapeHtml(room.roomName)}</span>
+                                <span class="conversation-time">${room.currentMembers}/${room.maxMembers}</span>
+                            </div>
+                            <div class="conversation-preview">${this.escapeHtml(room.description || '설명 없음')}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+        } catch (error) {
+            console.error('Search error:', error);
+            conversationList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">⚠️</div>
+                    <div class="empty-state-text">검색 중 오류가 발생했습니다</div>
+                </div>
+            `;
+        }
     }
 }
 
