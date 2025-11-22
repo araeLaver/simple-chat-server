@@ -49,11 +49,18 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/auth/**",  // 모든 인증 관련 엔드포인트 허용
                     "/actuator/health",
+                    "/actuator/prometheus",
+                    "/swagger-ui/**",
+                    "/v3/api-docs/**",
                     "/ws/**",  // WebSocket 연결 (내부에서 토큰 검증)
                     "/",
                     "/index.html",
+                    "/chat.html",
                     "/manifest.json",
                     "/sw.js",
+                    "/css/**",      // CSS 파일
+                    "/js/**",       // JS 파일
+                    "/assets/**",   // Assets 파일
                     "/*.css",
                     "/*.js",
                     "/static/**"
